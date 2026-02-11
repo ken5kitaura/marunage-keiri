@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>経理まるごとプラン | まるなげ経理 - パート経理1人分の費用で、経理部まるごと。</title>
+<meta name="description" content="記帳だけでなく、請求書管理・入金消込・支払管理・月次レポートまで。パート経理1人分の月額で、御社の経理部をまるごとお引き受けします。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-primary: #2B5F3F;
+  --color-primary-light: #3A7A54;
+  --color-primary-pale: #E8F2EC;
+  --color-primary-dark: #1E4A30;
+  --color-accent: #D4853A;
+  --color-accent-light: #F5E6D0;
+  --color-text: #2C2C2C;
+  --color-text-light: #5A5A5A;
+  --color-text-muted: #8A8A8A;
+  --color-bg: #FAFAF7;
+  --color-white: #FFFFFF;
+  --color-border: #E5E2DC;
+  --color-card: #FFFFFF;
+  --font-display: 'Zen Maru Gothic', sans-serif;
+  --font-body: 'Noto Sans JP', sans-serif;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+  --radius: 12px;
+  --radius-lg: 20px;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { max-width: 100%; display: block; }
+.container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* ===================== HEADER ===================== */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(250, 250, 247, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  transition: box-shadow 0.3s;
+}
+.site-header.scrolled { box-shadow: var(--shadow-sm); }
+.header-inner {
+  display: flex; justify-content: space-between; align-items: center;
+  height: 68px; max-width: 1080px; margin: 0 auto; padding: 0 24px;
+}
+.logo {
+  font-family: var(--font-display); font-weight: 900; font-size: 1.35rem;
+  color: var(--color-primary); text-decoration: none; letter-spacing: 0.02em;
+}
+.logo span { color: var(--color-accent); }
+.header-nav { display: flex; align-items: center; gap: 20px; }
+.header-link {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--color-text-light); text-decoration: none; transition: color 0.2s;
+}
+.header-link:hover { color: var(--color-primary); }
+.header-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 22px; background: var(--color-primary); color: var(--color-white);
+  font-family: var(--font-display); font-weight: 700; font-size: 0.85rem;
+  border-radius: 50px; text-decoration: none; transition: all 0.25s;
+}
+.header-cta:hover { background: var(--color-primary-light); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.header-cta svg { flex-shrink: 0; }
+
+/* ===================== HERO ===================== */
+.hero {
+  padding: 140px 0 80px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; top: -80px; right: -160px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(43,95,63,0.07) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero-content {
+  position: relative; z-index: 1; text-align: center; max-width: 760px; margin: 0 auto;
+}
+.hero-badge {
+  display: inline-block; padding: 6px 18px;
+  background: var(--color-accent-light); color: var(--color-accent);
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  border-radius: 50px; margin-bottom: 28px;
+}
+.hero h1 {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.8rem, 5vw, 2.9rem); line-height: 1.45;
+  color: var(--color-text); margin-bottom: 12px;
+}
+.hero h1 em {
+  font-style: normal; color: var(--color-primary); position: relative;
+}
+.hero h1 em::after {
+  content: ''; position: absolute; bottom: 2px; left: 0; right: 0;
+  height: 8px; background: rgba(212,133,58,0.25); border-radius: 4px; z-index: -1;
+}
+.hero-sub {
+  font-family: var(--font-display); font-size: clamp(1rem, 2.2vw, 1.2rem);
+  font-weight: 500; color: var(--color-text-light); margin-bottom: 40px; line-height: 1.75;
+}
+.hero-cta-group { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 18px 40px; background: var(--color-accent); color: var(--color-white);
+  font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
+  border-radius: 50px; text-decoration: none; transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(212,133,58,0.3);
+}
+.btn-primary:hover { background: #c07530; transform: translateY(-2px); box-shadow: 0 6px 24px rgba(212,133,58,0.4); }
+.hero-note { font-size: 0.85rem; color: var(--color-text-muted); }
+
+/* ===================== PROBLEM: TWO TYPES ===================== */
+.problem { padding: 80px 0; }
+.section-label {
+  display: inline-block; font-family: var(--font-display);
+  font-size: 0.8rem; font-weight: 700; color: var(--color-primary);
+  text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.5rem, 4vw, 2.1rem); line-height: 1.45; margin-bottom: 16px;
+}
+.section-desc {
+  font-size: 1rem; color: var(--color-text-light); max-width: 640px; line-height: 1.85;
+}
+.problem-header { text-align: center; margin-bottom: 48px; }
+.problem-header .section-desc { margin: 0 auto; }
+
+.comparison-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  max-width: 860px; margin: 0 auto;
+}
+.comparison-card {
+  border-radius: var(--radius-lg); padding: 36px 32px; position: relative;
+}
+.comparison-card.before {
+  background: #F5F0EB; border: 2px solid var(--color-border);
+}
+.comparison-card.after {
+  background: var(--color-primary-pale); border: 2px solid var(--color-primary);
+}
+.comparison-label {
+  display: inline-block; font-family: var(--font-display); font-weight: 700;
+  font-size: 0.75rem; padding: 4px 14px; border-radius: 50px; margin-bottom: 16px;
+}
+.comparison-card.before .comparison-label {
+  background: var(--color-border); color: var(--color-text-light);
+}
+.comparison-card.after .comparison-label {
+  background: var(--color-primary); color: var(--color-white);
+}
+.comparison-card h3 {
+  font-family: var(--font-display); font-weight: 900; font-size: 1.2rem;
+  margin-bottom: 12px; line-height: 1.5;
+}
+.comparison-card.before h3 { color: var(--color-text-light); }
+.comparison-card.after h3 { color: var(--color-primary); }
+.comparison-card p {
+  font-size: 0.92rem; color: var(--color-text-light); line-height: 1.8;
+}
+.comparison-card ul {
+  list-style: none; margin-top: 16px;
+}
+.comparison-card ul li {
+  font-size: 0.9rem; color: var(--color-text-light); padding: 6px 0;
+  display: flex; align-items: flex-start; gap: 8px; line-height: 1.6;
+}
+.comparison-card.before ul li::before {
+  content: '△'; color: var(--color-text-muted); flex-shrink: 0; font-size: 0.8rem; margin-top: 2px;
+}
+.comparison-card.after ul li::before {
+  content: '◎'; color: var(--color-primary); flex-shrink: 0; font-size: 0.8rem; margin-top: 2px;
+}
+.comparison-arrow {
+  display: none; /* shown on mobile */
+  text-align: center; font-size: 1.5rem; color: var(--color-primary); padding: 8px 0;
+}
+
+/* ===================== WHO NEEDS ===================== */
+.who-needs {
+  padding: 60px 0 80px;
+}
+.who-needs-inner {
+  background: var(--color-white); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: 48px 40px; max-width: 760px; margin: 0 auto;
+}
+.who-needs h2 {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.2rem, 3vw, 1.5rem); text-align: center;
+  margin-bottom: 32px; color: var(--color-text);
+}
+.checklist { list-style: none; }
+.checklist li {
+  font-size: 1rem; padding: 14px 0; border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: flex-start; gap: 12px; line-height: 1.7;
+}
+.checklist li:last-child { border-bottom: none; }
+.check-icon {
+  flex-shrink: 0; width: 28px; height: 28px; background: var(--color-primary-pale);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; color: var(--color-primary); font-weight: 700; margin-top: 2px;
+}
+
+/* ===================== SERVICE DETAIL ===================== */
+.service { padding: 80px 0; background: var(--color-primary); color: var(--color-white); position: relative; overflow: hidden; }
+.service::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.service-inner { position: relative; z-index: 1; }
+.service .section-label { color: rgba(255,255,255,0.6); }
+.service-header { text-align: center; margin-bottom: 56px; }
+.service-header h2 {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.5rem, 4vw, 2.1rem); line-height: 1.45; margin-bottom: 12px;
+}
+.service-header h2 em { font-style: normal; color: var(--color-accent); }
+.service-header p { font-size: 1rem; opacity: 0.8; max-width: 560px; margin: 0 auto; line-height: 1.85; }
+
+.service-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+}
+.service-card {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius); padding: 28px 24px; transition: all 0.3s;
+}
+.service-card:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+.service-card-icon {
+  font-size: 1.5rem; margin-bottom: 12px;
+}
+.service-card h3 {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+.service-card p {
+  font-size: 0.88rem; opacity: 0.8; line-height: 1.75;
+}
+.service-card .included-badge {
+  display: inline-block; margin-top: 12px; padding: 3px 10px;
+  background: rgba(212,133,58,0.25); color: var(--color-accent);
+  font-family: var(--font-display); font-weight: 700; font-size: 0.72rem;
+  border-radius: 20px;
+}
+
+/* ===================== REPORT PREVIEW ===================== */
+.report-section { padding: 80px 0; background: var(--color-white); }
+.report-inner { max-width: 800px; margin: 0 auto; text-align: center; }
+.report-inner .section-desc { margin: 0 auto 40px; }
+.report-mockup {
+  background: var(--color-bg); border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: 32px; text-align: left;
+}
+.report-mockup-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border);
+}
+.report-mockup-title {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
+  color: var(--color-primary);
+}
+.report-mockup-date { font-size: 0.85rem; color: var(--color-text-muted); }
+.report-kpi-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;
+}
+.report-kpi {
+  background: var(--color-white); border-radius: var(--radius); padding: 20px; text-align: center;
+  border: 1px solid var(--color-border);
+}
+.report-kpi-label {
+  font-size: 0.78rem; color: var(--color-text-muted); font-weight: 500; margin-bottom: 4px;
+}
+.report-kpi-value {
+  font-family: var(--font-display); font-weight: 900; font-size: 1.6rem; color: var(--color-primary);
+}
+.report-kpi-change {
+  font-size: 0.78rem; font-weight: 700; margin-top: 2px;
+}
+.report-kpi-change.up { color: var(--color-primary); }
+.report-kpi-change.down { color: #C0392B; }
+.report-bar-section { margin-bottom: 16px; }
+.report-bar-label {
+  font-size: 0.82rem; color: var(--color-text-light); margin-bottom: 6px;
+  display: flex; justify-content: space-between;
+}
+.report-bar {
+  height: 10px; background: var(--color-border); border-radius: 5px; overflow: hidden;
+}
+.report-bar-fill {
+  height: 100%; border-radius: 5px; transition: width 1s ease;
+}
+.report-bar-fill.green { background: var(--color-primary); }
+.report-bar-fill.orange { background: var(--color-accent); }
+.report-note {
+  text-align: center; font-size: 0.85rem; color: var(--color-text-muted);
+  margin-top: 20px; font-style: italic;
+}
+
+/* ===================== PRICING ===================== */
+.pricing { padding: 80px 0; }
+.pricing-header { text-align: center; margin-bottom: 48px; }
+.pricing-header .section-desc { margin: 0 auto; }
+
+.pricing-main {
+  max-width: 640px; margin: 0 auto 40px;
+}
+.pricing-card {
+  background: var(--color-white); border: 2px solid var(--color-primary);
+  border-radius: var(--radius-lg); padding: 40px 36px; position: relative;
+  box-shadow: var(--shadow-md);
+}
+.pricing-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--color-accent); color: var(--color-white);
+  font-family: var(--font-display); font-weight: 700; font-size: 0.78rem;
+  padding: 5px 20px; border-radius: 50px; white-space: nowrap;
+}
+.pricing-card-header { text-align: center; margin-bottom: 24px; padding-top: 8px; }
+.pricing-card-header h3 {
+  font-family: var(--font-display); font-weight: 900; font-size: 1.4rem;
+  color: var(--color-primary); margin-bottom: 8px;
+}
+.pricing-amount {
+  font-family: var(--font-display); font-weight: 900; font-size: 3rem;
+  color: var(--color-primary); line-height: 1.2;
+}
+.pricing-amount span { font-size: 1rem; font-weight: 500; color: var(--color-text-muted); }
+.pricing-unit { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 4px; }
+.pricing-comparison {
+  text-align: center; font-family: var(--font-display); font-weight: 700;
+  font-size: 0.92rem; color: var(--color-accent); margin-bottom: 24px;
+  padding: 10px; background: var(--color-accent-light); border-radius: 8px;
+}
+
+.pricing-includes { margin-bottom: 24px; }
+.pricing-includes-title {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
+  color: var(--color-text); margin-bottom: 12px;
+}
+.pricing-includes ul { list-style: none; }
+.pricing-includes ul li {
+  font-size: 0.92rem; color: var(--color-text-light); padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center; gap: 8px;
+}
+.pricing-includes ul li::before {
+  content: '✓'; color: var(--color-primary); font-weight: 700; flex-shrink: 0;
+}
+.pricing-note-text {
+  font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.7;
+}
+
+/* Options */
+.options { max-width: 640px; margin: 0 auto; }
+.options-title {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.05rem;
+  text-align: center; margin-bottom: 20px; color: var(--color-text);
+}
+.options-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.option-item {
+  background: var(--color-white); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 20px;
+}
+.option-item h4 {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.92rem;
+  margin-bottom: 4px;
+}
+.option-item .option-price {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.85rem;
+  color: var(--color-primary);
+}
+.option-item p {
+  font-size: 0.8rem; color: var(--color-text-muted); margin-top: 4px; line-height: 1.6;
+}
+
+/* ===================== STEP UP ===================== */
+.stepup {
+  padding: 60px 0; background: var(--color-primary-pale);
+}
+.stepup-inner {
+  text-align: center; max-width: 700px; margin: 0 auto;
+}
+.stepup h2 {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.2rem, 3vw, 1.5rem); color: var(--color-primary); margin-bottom: 16px;
+}
+.stepup p {
+  font-size: 0.95rem; color: var(--color-text-light); line-height: 1.85; margin-bottom: 10px;
+}
+.stepup-flow {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  margin-top: 28px; flex-wrap: wrap;
+}
+.stepup-item {
+  background: var(--color-white); border-radius: var(--radius);
+  padding: 16px 24px; font-family: var(--font-display); font-weight: 700;
+  font-size: 0.95rem; color: var(--color-primary); border: 1px solid var(--color-primary);
+}
+.stepup-item.active {
+  background: var(--color-primary); color: var(--color-white);
+}
+.stepup-arrow { font-size: 1.2rem; color: var(--color-primary); }
+
+/* ===================== FAQ ===================== */
+.faq { padding: 80px 0; background: var(--color-white); }
+.faq-header { text-align: center; margin-bottom: 48px; }
+.faq-list { max-width: 700px; margin: 0 auto; }
+.faq-item { border-bottom: 1px solid var(--color-border); padding: 24px 0; }
+.faq-q {
+  font-family: var(--font-display); font-weight: 700; font-size: 1.02rem;
+  color: var(--color-text); display: flex; align-items: flex-start; gap: 12px;
+}
+.faq-q::before {
+  content: 'Q'; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; background: var(--color-primary); color: var(--color-white);
+  font-size: 0.8rem; font-weight: 700; border-radius: 6px;
+}
+.faq-a {
+  padding: 12px 0 0 40px; font-size: 0.92rem; color: var(--color-text-light); line-height: 1.85;
+}
+
+/* ===================== CTA ===================== */
+.final-cta {
+  padding: 80px 0;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white); text-align: center; position: relative; overflow: hidden;
+}
+.final-cta::before {
+  content: ''; position: absolute; top: -50%; right: -20%;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(212,133,58,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.final-cta-inner { position: relative; z-index: 1; max-width: 620px; margin: 0 auto; }
+.final-cta h2 {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.5rem, 4vw, 2.2rem); line-height: 1.5; margin-bottom: 16px;
+}
+.final-cta p { font-size: 1rem; opacity: 0.85; margin-bottom: 32px; line-height: 1.8; }
+.btn-white {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 18px 40px; background: var(--color-white); color: var(--color-primary);
+  font-family: var(--font-display); font-weight: 700; font-size: 1.1rem;
+  border-radius: 50px; text-decoration: none; transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.btn-white:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.2); }
+.final-note { font-size: 0.82rem; opacity: 0.6; margin-top: 16px; }
+.final-sub-link {
+  display: block; margin-top: 20px; font-size: 0.85rem;
+  color: rgba(255,255,255,0.7); text-decoration: underline;
+}
+.final-sub-link:hover { color: var(--color-white); }
+
+/* ===================== FOOTER ===================== */
+.site-footer {
+  padding: 40px 0; background: #1a1a1a;
+  color: rgba(255,255,255,0.5); text-align: center; font-size: 0.82rem;
+}
+.site-footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
+
+/* ===================== ANIMATIONS ===================== */
+.fade-up {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 768px) {
+  .hero { padding: 120px 0 60px; }
+  .comparison-grid { grid-template-columns: 1fr; }
+  .comparison-arrow { display: block; }
+  .service-grid { grid-template-columns: 1fr; }
+  .report-kpi-grid { grid-template-columns: 1fr; }
+  .options-grid { grid-template-columns: 1fr; }
+  .pricing-card { padding: 32px 24px; }
+  .stepup-flow { flex-direction: column; }
+  .stepup-arrow { transform: rotate(90deg); }
+  .header-link { display: none; }
+  .header-cta span { display: none; }
+  .header-cta { padding: 10px 16px; }
+  .btn-primary, .btn-white { padding: 16px 32px; font-size: 1rem; }
+  .who-needs-inner { padding: 36px 24px; }
+  .report-mockup { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== HEADER ========== -->
+<header class="site-header" id="header">
+  <div class="header-inner">
+    <a href="https://marunagekeiri.com" class="logo">まるなげ<span>経理</span></a>
+    <div class="header-nav">
+      <a href="https://marunagekeiri.com" class="header-link">記帳代行プラン</a>
+      <a href="https://lin.ee/KbUqcWG" target="_blank" class="header-cta">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M12 1c-6.627 0-12 4.208-12 9.399 0 4.649 4.122 8.543 9.688 9.281.375.082.886.258.015.396-.14.806-.454 2.6-.052 2.6.443.027 1.047-.583 1.047-.583l3.588-2.139c.6-.1 1.175-.289 1.714-.536C20.457 18.858 24 14.83 24 10.399 24 5.208 18.627 1 12 1"/></svg>
+        <span>LINEで相談</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ========== HERO ========== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content fade-up">
+      <div class="hero-badge">経理まるごとアウトソーシング</div>
+      <h1>パート経理1人分の費用で、<br><em>経理部まるごと。</em></h1>
+      <p class="hero-sub">記帳だけじゃない。請求書管理、入金消込、支払管理、月次レポートまで。<br>御社の「経理部」を、まるなげ経理がお引き受けします。</p>
+      <div class="hero-cta-group">
+        <a href="https://lin.ee/KbUqcWG" target="_blank" class="btn-primary">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M12 1c-6.627 0-12 4.208-12 9.399 0 4.649 4.122 8.543 9.688 9.281.375.082.886.258.015.396-.14.806-.454 2.6-.052 2.6.443.027 1.047-.583 1.047-.583l3.588-2.139c.6-.1 1.175-.289 1.714-.536C20.457 18.858 24 14.83 24 10.399 24 5.208 18.627 1 12 1"/></svg>
+          まずはLINEで相談する
+        </a>
+        <p class="hero-note">御社の業務内容をお聞きして、最適なプランをご提案します</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PROBLEM: TWO TYPES ========== -->
+<section class="problem">
+  <div class="container">
+    <div class="problem-header fade-up">
+      <div class="section-label">経理には2つの種類があります</div>
+      <h2 class="section-title">「数字を記録する経理」と<br>「経営を動かす経理」。</h2>
+      <p class="section-desc">御社の経理は、どちらですか？</p>
+    </div>
+    <div class="comparison-grid">
+      <div class="comparison-card before fade-up">
+        <span class="comparison-label">多くの中小企業の現状</span>
+        <h3>🔧 整備記録簿としての経理</h3>
+        <p>税理士に渡すためだけに、数字を記録している状態。</p>
+        <ul>
+          <li>月末にならないとお金が足りるかわからない</li>
+          <li>「なんとなく儲かっている気がする」で経営判断</li>
+          <li>銀行に聞かれて初めて数字を調べる</li>
+          <li>どの取引先が利益を生んでいるか見えない</li>
+        </ul>
+      </div>
+      <div class="comparison-arrow fade-up">↓</div>
+      <div class="comparison-card after fade-up">
+        <span class="comparison-label">まるなげ経理が届ける経理</span>
+        <h3>🧭 計器類としての経理</h3>
+        <p>経営判断に使える数字が、毎月届く状態。</p>
+        <ul>
+          <li>今月の利益がリアルタイムでわかる</li>
+          <li>来月の資金繰りが事前に見える</li>
+          <li>前月比で何が増えたか・減ったかが一目瞭然</li>
+          <li>数字に基づいた経営判断ができる</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== WHO NEEDS ========== -->
+<section class="who-needs">
+  <div class="container">
+    <div class="who-needs-inner fade-up">
+      <h2>こんな状況なら、ご相談ください</h2>
+      <ul class="checklist">
+        <li><span class="check-icon">✓</span>経理担当が退職して、社長が自分で経理をやっている</li>
+        <li><span class="check-icon">✓</span>パートの経理が1人で回していて、辞められたら困る</li>
+        <li><span class="check-icon">✓</span>月次の数字が出てくるのが翌月末。遅すぎて経営判断に使えない</li>
+        <li><span class="check-icon">✓</span>経理スタッフを雇いたいが、月20万円以上の人件費は出せない</li>
+        <li><span class="check-icon">✓</span>税理士に渡す資料を作るだけで精一杯。経営数値まで手が回らない</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SERVICE DETAIL ========== -->
+<section class="service">
+  <div class="container">
+    <div class="service-inner">
+      <div class="service-header fade-up">
+        <div class="section-label">サービス内容</div>
+        <h2>経理業務を<em>まるごと</em>お引き受けします</h2>
+        <p>記帳から月次レポートまで、経理部がやるべき仕事をワンストップで。</p>
+      </div>
+      <div class="service-grid">
+        <div class="service-card fade-up">
+          <div class="service-card-icon">📋</div>
+          <h3>記帳・仕訳</h3>
+          <p>領収書・レシート・請求書をもとに正確に仕訳。お使いの会計ソフトに対応します。</p>
+          <span class="included-badge">基本プランに含む</span>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-card-icon">📨</div>
+          <h3>請求書の発行・管理</h3>
+          <p>取引先への請求書作成・送付・入金確認まで。請求漏れを防ぎます。</p>
+          <span class="included-badge">基本プランに含む</span>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-card-icon">🔍</div>
+          <h3>入金消込</h3>
+          <p>口座に入金されたお金がどの請求に対するものか、正確に突き合わせます。</p>
+          <span class="included-badge">基本プランに含む</span>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-card-icon">💳</div>
+          <h3>支払い管理</h3>
+          <p>仕入先・外注先への支払いを期日管理。振込データを作成してお渡しします。</p>
+          <span class="included-badge">基本プランに含む</span>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-card-icon">🧾</div>
+          <h3>経費精算</h3>
+          <p>社員の立替経費をとりまとめ、内容チェック・集計・精算処理を行います。</p>
+          <span class="included-badge">基本プランに含む</span>
+        </div>
+        <div class="service-card fade-up">
+          <div class="service-card-icon">📊</div>
+          <h3>月次経営レポート</h3>
+          <p>損益・資金繰り・前月比較を毎月お届け。社長が見てすぐわかる形式で。</p>
+          <span class="included-badge">基本プランに含む</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== REPORT PREVIEW ========== -->
+<section class="report-section">
+  <div class="container">
+    <div class="report-inner">
+      <div class="fade-up">
+        <div class="section-label">月次経営レポート</div>
+        <h2 class="section-title">毎月届く、経営の「計器類」</h2>
+        <p class="section-desc">数字の羅列ではなく、社長が見てすぐ判断できる形で毎月お届けします。</p>
+      </div>
+      <div class="report-mockup fade-up">
+        <div class="report-mockup-header">
+          <span class="report-mockup-title">📊 月次経営レポート</span>
+          <span class="report-mockup-date">2026年1月度</span>
+        </div>
+        <div class="report-kpi-grid">
+          <div class="report-kpi">
+            <div class="report-kpi-label">今月の売上</div>
+            <div class="report-kpi-value">¥4,820,000</div>
+            <div class="report-kpi-change up">▲ 前月比 +8.2%</div>
+          </div>
+          <div class="report-kpi">
+            <div class="report-kpi-label">営業利益</div>
+            <div class="report-kpi-value">¥680,000</div>
+            <div class="report-kpi-change up">▲ 前月比 +12.1%</div>
+          </div>
+          <div class="report-kpi">
+            <div class="report-kpi-label">月末現預金残高</div>
+            <div class="report-kpi-value">¥3,150,000</div>
+            <div class="report-kpi-change down">▼ 前月比 -3.4%</div>
+          </div>
+        </div>
+        <div class="report-bar-section">
+          <div class="report-bar-label"><span>来月の支払い予定</span><span>¥2,400,000</span></div>
+          <div class="report-bar"><div class="report-bar-fill orange" style="width: 76%"></div></div>
+        </div>
+        <div class="report-bar-section">
+          <div class="report-bar-label"><span>来月の入金予定</span><span>¥3,200,000</span></div>
+          <div class="report-bar"><div class="report-bar-fill green" style="width: 100%"></div></div>
+        </div>
+        <p class="report-note">※ これはレポートのイメージです。御社に合わせた形式でお届けします。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PRICING ========== -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="pricing-header fade-up">
+      <div class="section-label">料金</div>
+      <h2 class="section-title">シンプルな月額制</h2>
+      <p class="section-desc">御社の業務量に応じてお見積もりします。まずはお気軽にご相談ください。</p>
+    </div>
+    <div class="pricing-main fade-up">
+      <div class="pricing-card">
+        <div class="pricing-badge">パート経理1人分のコストで</div>
+        <div class="pricing-card-header">
+          <h3>経理まるごとプラン</h3>
+          <div class="pricing-amount">¥150,000〜<span> / 月</span></div>
+          <div class="pricing-unit">税別</div>
+        </div>
+        <div class="pricing-comparison">
+          💡 経理スタッフを1人雇うと月35〜45万円 → 半額以下で経理部まるごと
+        </div>
+        <div class="pricing-includes">
+          <div class="pricing-includes-title">基本プランに含まれる業務</div>
+          <ul>
+            <li>記帳・仕訳（月500行まで）</li>
+            <li>請求書の発行・管理</li>
+            <li>入金消込</li>
+            <li>支払い管理・振込データ作成</li>
+            <li>経費精算</li>
+            <li>月次経営レポート（損益・資金繰り・前月比較）</li>
+            <li>税理士・社労士との連携窓口</li>
+          </ul>
+        </div>
+        <p class="pricing-note-text">※ 想定企業規模：従業員10名以下、月商500万円以下程度<br>※ 500行を超える場合は1行あたり20円（税別）の従量課金<br>※ 業務量・範囲に応じて個別にお見積もりいたします</p>
+      </div>
+    </div>
+    <div class="options fade-up">
+      <div class="options-title">オプション（必要に応じて追加）</div>
+      <div class="options-grid">
+        <div class="option-item">
+          <h4>給与計算</h4>
+          <div class="option-price">従業員1人あたり月2,000円</div>
+          <p>勤怠集計・社保計算・振込データ作成</p>
+        </div>
+        <div class="option-item">
+          <h4>年末調整</h4>
+          <div class="option-price">従業員1人あたり3,000円</div>
+          <p>年に1回の年末調整業務</p>
+        </div>
+        <div class="option-item">
+          <h4>決算サポート</h4>
+          <div class="option-price">年1回 50,000円〜</div>
+          <p>決算に必要な資料の整理・作成</p>
+        </div>
+        <div class="option-item">
+          <h4>資金繰り予測</h4>
+          <div class="option-price">月30,000円〜</div>
+          <p>3〜6ヶ月先の資金繰りシミュレーション</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== STEP UP ========== -->
+<section class="stepup">
+  <div class="container">
+    <div class="stepup-inner fade-up">
+      <h2>記帳代行から始めて、段階的に広げることもできます</h2>
+      <p>「いきなり全部任せるのは不安…」という方は、まず月1万円の記帳代行からスタート。仕上がりの品質を確認してから、業務範囲を広げていくことが可能です。</p>
+      <div class="stepup-flow">
+        <div class="stepup-item">記帳代行<br><small style="font-weight:400; font-size:0.75rem;">月1万円〜</small></div>
+        <span class="stepup-arrow">→</span>
+        <div class="stepup-item active">経理まるごと<br><small style="font-weight:400; font-size:0.75rem;">月15万円〜</small></div>
+        <span class="stepup-arrow">→</span>
+        <div class="stepup-item">経営数値分析<br><small style="font-weight:400; font-size:0.75rem;">ご相談</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FAQ ========== -->
+<section class="faq">
+  <div class="container">
+    <div class="faq-header fade-up">
+      <div class="section-label">よくあるご質問</div>
+      <h2 class="section-title">経理まるごとプランについて</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item fade-up">
+        <div class="faq-q">今の税理士との関係はどうなりますか？</div>
+        <div class="faq-a">税理士さんとの契約はそのまま継続してください。まるなげ経理は、税理士さんに渡す前の「日々の経理業務」を代行します。税理士さんとのやり取りもこちらで窓口を担当しますので、御社の手間はかかりません。</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q">会社のお金を直接触ることはありますか？</div>
+        <div class="faq-a">いいえ。振込データの「作成」はこちらで行いますが、実際の振込実行（ボタンを押す行為）は御社にお願いしています。お金の移動に関する最終権限は、常に御社に残ります。</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q">うちの会計ソフトに対応していますか？</div>
+        <div class="faq-a">freee、マネーフォワード、弥生会計、勘定奉行など主要な会計ソフトに対応しています。会計ソフトを導入されていない場合も、導入のサポートから対応可能です。</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q">従業員が増えたら料金は変わりますか？</div>
+        <div class="faq-a">基本プランの料金は業務量に応じて決まりますので、事業の成長に合わせてご相談させてください。オプションの給与計算は従業員数に応じた料金です。急な変更にも柔軟に対応します。</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q">セキュリティは大丈夫ですか？</div>
+        <div class="faq-a">お預かりした財務データは厳重に管理しています。業務開始前に守秘義務契約（NDA）を締結し、データの取り扱いルールを明確にしたうえで業務にあたります。</div>
+      </div>
+      <div class="faq-item fade-up">
+        <div class="faq-q">最低利用期間はありますか？</div>
+        <div class="faq-a">3ヶ月からのご契約をお願いしています。経理業務の引き継ぎと安定稼働には一定の期間が必要なためです。3ヶ月以降はいつでも解約可能です。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FINAL CTA ========== -->
+<section class="final-cta" id="contact">
+  <div class="container">
+    <div class="final-cta-inner fade-up">
+      <h2>経理の悩みから、<br>解放されませんか。</h2>
+      <p>まずはLINEでお気軽にご相談ください。御社の業務内容をお聞きして、最適なプランと費用をご提案します。無理な営業は一切いたしません。</p>
+      <a href="https://lin.ee/KbUqcWG" target="_blank" class="btn-white">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#2B5F3F"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M12 1c-6.627 0-12 4.208-12 9.399 0 4.649 4.122 8.543 9.688 9.281.375.082.886.258.015.396-.14.806-.454 2.6-.052 2.6.443.027 1.047-.583 1.047-.583l3.588-2.139c.6-.1 1.175-.289 1.714-.536C20.457 18.858 24 14.83 24 10.399 24 5.208 18.627 1 12 1"/></svg>
+        LINEで無料相談する
+      </a>
+      <p class="final-note">※ 相談は無料です。お見積もりだけでもお気軽にどうぞ。</p>
+      <a href="https://marunagekeiri.com" class="final-sub-link">まずは記帳代行から始めたい方はこちら →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="site-footer">
+  <div class="container">
+    <p>© 2026 まるなげ経理 All rights reserved. ｜ <a href="https://marunagekeiri.com">記帳代行プラン</a></p>
+  </div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+const header = document.getElementById('header');
+window.addEventListener('scroll', () => {
+  header.classList.toggle('scrolled', window.scrollY > 10);
+});
+</script>
+
+</body>
+</html>
