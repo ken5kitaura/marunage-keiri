@@ -90,10 +90,13 @@ img { max-width: 100%; display: block; }
 
 .header-nav { display: flex; align-items: center; gap: 20px; }
 .header-link {
-  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
-  color: var(--color-text-light); text-decoration: none; transition: color 0.2s;
+  font-family: var(--font-display); font-size: 0.82rem; font-weight: 700;
+  color: var(--color-primary); text-decoration: none; transition: all 0.2s;
+  padding: 7px 16px;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 50px;
 }
-.header-link:hover { color: var(--color-primary); }
+.header-link:hover { background: var(--color-primary); color: var(--color-white); }
 
 .header-cta {
   display: inline-flex;
