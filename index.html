@@ -88,6 +88,13 @@ img { max-width: 100%; display: block; }
 
 .logo span { color: var(--color-accent); }
 
+.header-nav { display: flex; align-items: center; gap: 20px; }
+.header-link {
+  font-family: var(--font-display); font-size: 0.85rem; font-weight: 700;
+  color: var(--color-text-light); text-decoration: none; transition: color 0.2s;
+}
+.header-link:hover { color: var(--color-primary); }
+
 .header-cta {
   display: inline-flex;
   align-items: center;
@@ -813,6 +820,7 @@ img { max-width: 100%; display: block; }
   .step-number { width: 44px; height: 44px; font-size: 1.1rem; }
   .step-item:not(:last-child)::after { left: 21px; top: 76px; }
   
+  .header-link { display: none; }
   .header-cta span { display: none; }
   .header-cta { padding: 10px 16px; }
   
@@ -826,10 +834,13 @@ img { max-width: 100%; display: block; }
 <header class="site-header" id="header">
   <div class="header-inner">
     <a href="#" class="logo">まるなげ<span>経理</span></a>
-    <a href="https://lin.ee/KbUqcWG" target="_blank" class="header-cta">
+    <div class="header-nav">
+      <a href="/bpo.html" class="header-link">経理まるごとプラン</a>
+      <a href="https://lin.ee/KbUqcWG" target="_blank" class="header-cta">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M12 1c-6.627 0-12 4.208-12 9.399 0 4.649 4.122 8.543 9.688 9.281.375.082.886.258.015.396-.14.806-.454 2.6-.052 2.6.443.027 1.047-.583 1.047-.583l3.588-2.139c.6-.1 1.175-.289 1.714-.536C20.457 18.858 24 14.83 24 10.399 24 5.208 18.627 1 12 1"/></svg>
       <span>LINEで無料相談</span>
-    </a>
+      </a>
+    </div>
   </div>
 </header>
 
@@ -1089,6 +1100,15 @@ img { max-width: 100%; display: block; }
       </a>
       <p class="final-note">※LINEで友だち追加後、領収書の写真を5枚お送りください</p>
     </div>
+  </div>
+</section>
+
+<!-- ========== BPO UPSELL ========== -->
+<section style="padding: 40px 0; background: #E8F2EC; text-align: center;">
+  <div class="container">
+    <p style="font-family: 'Zen Maru Gothic', sans-serif; font-weight: 700; font-size: 1.1rem; color: #2B5F3F; margin-bottom: 8px;">記帳だけでなく、経理業務をまるごと任せたい方へ</p>
+    <p style="font-size: 0.9rem; color: #5A5A5A; margin-bottom: 20px;">請求書管理・入金消込・支払管理・月次レポートまで、経理部まるごとお引き受けします。</p>
+    <a href="/bpo.html" style="display: inline-block; padding: 14px 32px; background: #2B5F3F; color: #fff; font-family: 'Zen Maru Gothic', sans-serif; font-weight: 700; font-size: 0.95rem; border-radius: 50px; text-decoration: none;">経理まるごとプランを見る →</a>
   </div>
 </section>
 
