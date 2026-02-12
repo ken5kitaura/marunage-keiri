@@ -92,6 +92,16 @@ img { max-width: 100%; display: block; }
   color: var(--color-primary);
   text-decoration: none;
   letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .logo span { color: var(--color-accent); }
@@ -1031,7 +1041,7 @@ img { max-width: 100%; display: block; }
 <!-- ========== HEADER ========== -->
 <header class="site-header" id="header">
   <div class="header-inner">
-    <a href="#" class="logo">まるなげ<span>経理</span></a>
+    <a href="#" class="logo"><img src="/marunage_icon_400.png" alt="まるなげ経理" class="logo-icon">まるなげ<span>経理</span></a>
     <div class="header-nav">
       <a href="/bpo.html" class="header-link">経理まるごとプラン</a>
       <a href="https://note.com/marunagekeiri" target="_blank" class="header-link">note</a>
