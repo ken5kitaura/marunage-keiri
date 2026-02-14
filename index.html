@@ -391,6 +391,99 @@ img { max-width: 100%; display: block; }
   margin-top: 20px;
 }
 
+/* ===================== TRIAL ===================== */
+.trial {
+  padding: 80px 0;
+  background: var(--color-accent-light);
+}
+
+.trial-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.trial h2 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  color: var(--color-text);
+  margin-bottom: 20px;
+}
+
+.trial-desc {
+  font-size: 1.05rem;
+  color: var(--color-text-light);
+  line-height: 1.85;
+  margin-bottom: 32px;
+}
+
+.trial-steps {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.trial-step {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  text-align: center;
+  flex: 1;
+  min-width: 180px;
+  max-width: 220px;
+}
+
+.trial-step-num {
+  width: 36px;
+  height: 36px;
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.trial-step h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.trial-step p {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.trial-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 36px;
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(212,133,58,0.3);
+}
+
+.trial-cta:hover {
+  background: #c07530;
+  transform: translateY(-2px);
+}
+
 /* ===================== STEPS ===================== */
 .steps {
   padding: 80px 0;
@@ -627,6 +720,113 @@ img { max-width: 100%; display: block; }
   margin-top: 16px;
 }
 
+.price-cta {
+  display: inline-block;
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--color-white);
+  color: var(--color-primary);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 2px solid var(--color-primary);
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.25s;
+  margin-top: 20px;
+}
+
+.price-cta:hover {
+  background: var(--color-primary);
+  color: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.price-cta-primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.price-cta-primary:hover {
+  background: var(--color-primary-light);
+}
+
+.signup-flow {
+  max-width: 900px;
+  margin: 48px auto 0;
+  background: var(--color-primary-pale);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  text-align: center;
+}
+
+.signup-flow h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  margin-bottom: 24px;
+}
+
+.signup-steps {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.signup-step {
+  background: var(--color-white);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  min-width: 140px;
+}
+
+.signup-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 0.9rem;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.signup-step p {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.signup-arrow {
+  color: var(--color-primary);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .signup-steps {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .signup-arrow {
+    transform: rotate(90deg);
+  }
+  .signup-step {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
 /* ===================== EXPANSION ===================== */
 .expansion {
   padding: 60px 0;
@@ -825,7 +1025,7 @@ img { max-width: 100%; display: block; }
 @media (max-width: 768px) {
   .hero { padding: 120px 0 60px; }
   .pain, .steps, .features, .pricing, .faq { padding: 60px 0; }
-  .solution, .final-cta { padding: 60px 0; }
+  .solution, .final-cta, .trial { padding: 60px 0; }
   .expansion { padding: 48px 0; }
   
   .pain-grid, .features-grid {
@@ -846,6 +1046,9 @@ img { max-width: 100%; display: block; }
   .header-cta { padding: 10px 16px; }
   
   .btn-primary, .btn-white { padding: 16px 32px; font-size: 1rem; }
+  
+  .trial-steps { flex-direction: column; align-items: center; }
+  .trial-step { max-width: 280px; }
 }
 </style>
 <!-- SEO/AIO: 構造化データ (JSON-LD) -->
@@ -910,7 +1113,7 @@ img { max-width: 100%; display: block; }
           {
             "@type": "Offer",
             "name": "ミニマルプラン",
-            "description": "月の取引が少ない小規模事業者向け。月さ30行までの記帳処理。",
+            "description": "月の取引が少ない小規模事業者向け。月30行までの記帳処理。全プラン最終チェック付き。",
             "price": "5000",
             "priceCurrency": "JPY",
             "priceSpecification": {
@@ -924,7 +1127,7 @@ img { max-width: 100%; display: block; }
           {
             "@type": "Offer",
             "name": "ライトプラン",
-            "description": "中小企業に一番人気。月さ200行までの記帳処理。",
+            "description": "中小企業に一番人気。月100行までの記帳処理。全プラン最終チェック付き。",
             "price": "10000",
             "priceCurrency": "JPY",
             "priceSpecification": {
@@ -938,7 +1141,7 @@ img { max-width: 100%; display: block; }
           {
             "@type": "Offer",
             "name": "スタンダードプラン",
-            "description": "精度重視の方向け。プロによる最終チェック付き。月さ200行まで。",
+            "description": "取引量の多い方向け。月200行までの記帳処理。全プラン最終チェック付き。",
             "price": "14000",
             "priceCurrency": "JPY",
             "priceSpecification": {
@@ -1027,7 +1230,7 @@ img { max-width: 100%; display: block; }
           "name": "最低利用期間はありますか？",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "いいえ、最低利用期間の縛りはありません。1ヶ月だけのご利用も可能です。まずは無料テスト（領収書5枚分）からお気軽にお試しください。"
+            "text": "いいえ、最低利用期間の縛りはありません。1ヶ月だけのご利用も可能です。まずは無料お試しからお気軽にどうぞ。"
           }
         }
       ]
@@ -1047,7 +1250,7 @@ img { max-width: 100%; display: block; }
       <a href="https://note.com/marunagekeiri" target="_blank" class="header-link">note</a>
       <a href="https://lin.ee/KbUqcWG" target="_blank" class="header-cta">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M12 1c-6.627 0-12 4.208-12 9.399 0 4.649 4.122 8.543 9.688 9.281.375.082.886.258.015.396-.14.806-.454 2.6-.052 2.6.443.027 1.047-.583 1.047-.583l3.588-2.139c.6-.1 1.175-.289 1.714-.536C20.457 18.858 24 14.83 24 10.399 24 5.208 18.627 1 12 1"/></svg>
-      <span>LINEで無料相談</span>
+      <span>LINEで無料お試し</span>
       </a>
     </div>
   </div>
@@ -1059,14 +1262,45 @@ img { max-width: 100%; display: block; }
     <div class="hero-content fade-up">
       <div class="hero-badge">新しいシステムの導入は一切不要</div>
       <h1>領収書を送るだけ。<br><em>あとは全部やります。</em></h1>
-      <p class="hero-sub">経理の人手が足りない。領収書が溜まる一方。<br>そんな悩みを月額1万円から解決します。</p>
+      <p class="hero-sub">経理の人手が足りない。領収書が溜まる一方。<br>そんな悩みを月額5,000円から解決します。</p>
       <div class="hero-cta-group">
         <a href="https://lin.ee/KbUqcWG" target="_blank" class="btn-primary">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M12 1c-6.627 0-12 4.208-12 9.399 0 4.649 4.122 8.543 9.688 9.281.375.082.886.258.015.396-.14.806-.454 2.6-.052 2.6.443.027 1.047-.583 1.047-.583l3.588-2.139c.6-.1 1.175-.289 1.714-.536C20.457 18.858 24 14.83 24 10.399 24 5.208 18.627 1 12 1"/></svg>
-          LINEで無料テストを申し込む
+          LINEで無料お試し
         </a>
-        <p class="hero-note">領収書5枚を無料でテスト処理いたします</p>
+        <p class="hero-note">領収書を送ると、AIがその場で読み取り結果をお返しします</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TRIAL ========== -->
+<section class="trial">
+  <div class="container">
+    <div class="trial-inner fade-up">
+      <h2>まずは無料でお試しください</h2>
+      <p class="trial-desc">LINEで領収書の写真を送ると、AIがその場で日付・店名・金額を読み取り。<br>実際のサービスの使い心地を、すぐに体験いただけます。</p>
+      <div class="trial-steps">
+        <div class="trial-step">
+          <div class="trial-step-num">1</div>
+          <h4>LINE友だち追加</h4>
+          <p>下のボタンから追加</p>
+        </div>
+        <div class="trial-step">
+          <div class="trial-step-num">2</div>
+          <h4>領収書を送る</h4>
+          <p>写真を撮って送るだけ</p>
+        </div>
+        <div class="trial-step">
+          <div class="trial-step-num">3</div>
+          <h4>即座に読み取り</h4>
+          <p>AIが結果をお返しします</p>
+        </div>
+      </div>
+      <a href="https://lin.ee/KbUqcWG" target="_blank" class="trial-cta">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M12 1c-6.627 0-12 4.208-12 9.399 0 4.649 4.122 8.543 9.688 9.281.375.082.886.258.015.396-.14.806-.454 2.6-.052 2.6.443.027 1.047-.583 1.047-.583l3.588-2.139c.6-.1 1.175-.289 1.714-.536C20.457 18.858 24 14.83 24 10.399 24 5.208 18.627 1 12 1"/></svg>
+        無料でお試しする
+      </a>
     </div>
   </div>
 </section>
@@ -1169,8 +1403,8 @@ img { max-width: 100%; display: block; }
       </div>
       <div class="feature-card fade-up">
         <div class="feature-icon">🎯</div>
-        <h3>高い精度</h3>
-        <p>独自の多段階チェック体制で、入力ミスを徹底的に防ぎます。税務調査にも安心して対応できる品質をお約束します。</p>
+        <h3>全プラン最終チェック付き</h3>
+        <p>AIによる読み取りに加え、経理のプロが最終確認。入力ミスを徹底的に防ぎ、税務調査にも安心して対応できる品質をお約束します。</p>
       </div>
       <div class="feature-card fade-up">
         <div class="feature-icon">🤝</div>
@@ -1180,7 +1414,7 @@ img { max-width: 100%; display: block; }
       <div class="feature-card fade-up">
         <div class="feature-icon">💰</div>
         <h3>経理スタッフより圧倒的に安い</h3>
-        <p>パートの経理スタッフを雇えば月10万円以上。まるなげ経理なら月1万円から。浮いたお金で営業や商品開発に投資できます。</p>
+        <p>パートの経理スタッフを雇えば月10万円以上。まるなげ経理なら月5,000円から。浮いたお金で営業や商品開発に投資できます。</p>
       </div>
       <div class="feature-card fade-up">
         <div class="feature-icon">📱</div>
@@ -1197,7 +1431,7 @@ img { max-width: 100%; display: block; }
     <div class="pricing-header fade-up">
       <div class="section-label">料金プラン</div>
       <h2 class="section-title">シンプルな料金体系</h2>
-      <p class="section-desc">隠れた追加料金はありません。まずはお気軽にご相談ください。</p>
+      <p class="section-desc">全プラン、プロによる最終チェック付き。隠れた追加料金はありません。</p>
     </div>
     <div class="pricing-grid pricing-grid-3">
       <div class="price-card fade-up">
@@ -1207,9 +1441,11 @@ img { max-width: 100%; display: block; }
         <ul class="price-features">
           <li>月30行までの記帳処理</li>
           <li>領収書・レシートの仕訳</li>
+          <li>プロによる最終チェック</li>
           <li>お使いの会計ソフト形式で納品</li>
           <li>メール・LINEでのやりとり</li>
         </ul>
+        <a href="https://lin.ee/KbUqcWG" target="_blank" class="price-cta">LINEで申し込む</a>
         <p class="price-note">小規模店舗・個人事業主の方に</p>
       </div>
       <div class="price-card recommended fade-up">
@@ -1218,11 +1454,13 @@ img { max-width: 100%; display: block; }
         <div class="price-amount">¥10,000<span> / 月</span></div>
         <div class="price-unit">税別</div>
         <ul class="price-features">
-          <li>月200行までの記帳処理</li>
+          <li>月100行までの記帳処理</li>
           <li>領収書・レシートの仕訳</li>
+          <li>プロによる最終チェック</li>
           <li>お使いの会計ソフト形式で納品</li>
           <li>メール・LINEでのやりとり</li>
         </ul>
+        <a href="https://lin.ee/KbUqcWG" target="_blank" class="price-cta price-cta-primary">LINEで申し込む</a>
         <p class="price-note">中小企業の方に一番人気</p>
       </div>
       <div class="price-card fade-up">
@@ -1232,14 +1470,41 @@ img { max-width: 100%; display: block; }
         <ul class="price-features">
           <li>月200行までの記帳処理</li>
           <li>領収書・レシートの仕訳</li>
-          <li>プロによる最終チェック付き</li>
+          <li>プロによる最終チェック</li>
           <li>お使いの会計ソフト形式で納品</li>
           <li>メール・LINEでのやりとり</li>
         </ul>
-        <p class="price-note">精度重視の方に</p>
+        <a href="https://lin.ee/KbUqcWG" target="_blank" class="price-cta">LINEで申し込む</a>
+        <p class="price-note">取引量の多い方に</p>
       </div>
     </div>
-    <p class="price-note fade-up" style="text-align:center; margin-top: 24px;">※200行を超える場合は1行あたり20円（税別）の従量課金となります。<br>※経理業務全般のアウトソーシングも承ります。お気軽にご相談ください。</p>
+    <p class="price-note fade-up" style="text-align:center; margin-top: 24px;">※超過分は1行あたり20円（税別）<br>※経理業務全般のアウトソーシングも承ります。お気軽にご相談ください。</p>
+
+    <!-- お申込みの流れ -->
+    <div class="signup-flow fade-up">
+      <h3>お申込みの流れ</h3>
+      <div class="signup-steps">
+        <div class="signup-step">
+          <span class="signup-num">1</span>
+          <p>LINE友だち追加</p>
+        </div>
+        <div class="signup-arrow">→</div>
+        <div class="signup-step">
+          <span class="signup-num">2</span>
+          <p>「契約済み・利用開始」をタップ</p>
+        </div>
+        <div class="signup-arrow">→</div>
+        <div class="signup-step">
+          <span class="signup-num">3</span>
+          <p>プランを選んで決済</p>
+        </div>
+        <div class="signup-arrow">→</div>
+        <div class="signup-step">
+          <span class="signup-num">4</span>
+          <p>コードを入力して利用開始！</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1287,7 +1552,7 @@ img { max-width: 100%; display: block; }
       </div>
       <div class="faq-item fade-up">
         <div class="faq-q">最低利用期間はありますか？</div>
-        <div class="faq-a">いいえ、最低利用期間の縛りはありません。1ヶ月だけのご利用も可能です。まずは無料テストからお気軽にお試しください。</div>
+        <div class="faq-a">いいえ、最低利用期間の縛りはありません。1ヶ月だけのご利用も可能です。まずは無料お試しからお気軽にどうぞ。</div>
       </div>
       <div class="faq-item fade-up">
         <div class="faq-q">セキュリティは大丈夫ですか？</div>
@@ -1332,13 +1597,13 @@ img { max-width: 100%; display: block; }
 <section class="final-cta" id="contact">
   <div class="container">
     <div class="final-cta-inner fade-up">
-      <h2>まずは領収書5枚で<br>お試しください。</h2>
-      <p>無料のテスト処理で、仕上がりの品質とスピードを体験していただけます。お試し後に契約の義務は一切ありません。</p>
+      <h2>まずは無料でお試しください</h2>
+      <p>LINEで領収書を送るだけで、AIがその場で読み取り結果をお返しします。<br>実際のサービスの使い心地を、すぐに体験いただけます。</p>
       <a href="https://lin.ee/KbUqcWG" target="_blank" class="btn-white">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="#2B5F3F"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M12 1c-6.627 0-12 4.208-12 9.399 0 4.649 4.122 8.543 9.688 9.281.375.082.886.258.015.396-.14.806-.454 2.6-.052 2.6.443.027 1.047-.583 1.047-.583l3.588-2.139c.6-.1 1.175-.289 1.714-.536C20.457 18.858 24 14.83 24 10.399 24 5.208 18.627 1 12 1"/></svg>
-        LINEで無料テストを申し込む
+        LINEで無料お試し
       </a>
-      <p class="final-note">※LINEで友だち追加後、領収書の写真を5枚お送りください</p>
+      <p class="final-note">※契約の義務は一切ありません</p>
     </div>
   </div>
 </section>
