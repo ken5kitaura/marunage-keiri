@@ -1,0 +1,19 @@
+# clasp設定（scriptIdを含むためリポジトリに含めない）
+gas/.clasp.json
+
+# Node.js
+node_modules/
+
+# macOS
+.DS_Store
+
+# 一時ファイル・デバッグ用
+gas/debug_receipts/
+*.tmp
+*.log
+*~
+
+# エディタ
+.vscode/
+.idea/
+.claude/

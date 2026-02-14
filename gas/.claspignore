@@ -1,0 +1,14 @@
+# Test files
+test_*.js
+*_test.js
+*.test.js
+
+# Documentation
+README.md
+*.md
+!appsscript.json
+
+# Design specs & docs (not for GAS)
+specs/
+docs/
+debug_receipts/

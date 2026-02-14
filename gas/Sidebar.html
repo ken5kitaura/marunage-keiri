@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Google Sans', Arial, sans-serif;
+    font-size: 13px;
+    color: #333;
+    background: #f8f9fa;
+    overflow-x: hidden;
+  }
+
+  /* ヘッダー */
+  .header {
+    background: #1a73e8;
+    color: #fff;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header .row-num {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+  }
+
+  /* ステータスバッジ */
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+  }
+  .status-ok { background: #34a853; }
+  .status-check { background: #ea4335; }
+  .status-compound { background: #fbbc04; color: #333; }
+  .status-error { background: #ea4335; }
+  .status-unknown { background: #999; }
+
+  /* プレビュー */
+  .preview-area {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    position: relative;
+    min-height: 200px;
+  }
+  .preview-area iframe,
+  .preview-area img {
+    width: 100%;
+    display: block;
+    border: none;
+  }
+  .preview-area iframe {
+    height: 350px;
+  }
+  .preview-area img {
+    max-height: 400px;
+    object-fit: contain;
+    background: #eee;
+  }
+  .preview-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #999;
+    font-size: 13px;
+  }
+  .open-link {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .open-link:hover { background: rgba(0,0,0,0.7); }
+
+  /* データセクション */
+  .data-section {
+    padding: 10px 12px;
+  }
+  .store-name {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    word-break: break-all;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    padding: 3px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .meta-label {
+    color: #666;
+    font-size: 11px;
+    flex-shrink: 0;
+    width: 80px;
+  }
+  .meta-value {
+    text-align: right;
+    font-weight: 500;
+    word-break: break-all;
+    flex: 1;
+  }
+  .meta-value.amount {
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  /* 税額テーブル */
+  .tax-table {
+    width: 100%;
+    margin: 8px 0;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .tax-table th {
+    background: #f0f0f0;
+    padding: 4px 6px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 11px;
+  }
+  .tax-table td {
+    padding: 4px 6px;
+    text-align: right;
+    border-bottom: 1px solid #f0f0f0;
+    font-family: 'Roboto Mono', monospace;
+  }
+  .tax-table td:first-child {
+    text-align: left;
+    font-family: inherit;
+  }
+
+  /* デバッグ */
+  .debug-box {
+    background: #fce8e6;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #c62828;
+    word-break: break-all;
+  }
+  .debug-box.empty {
+    background: #e8f5e9;
+    border-color: #c8e6c9;
+    color: #2e7d32;
+  }
+
+  /* ファイル名 */
+  .filename {
+    font-size: 10px;
+    color: #999;
+    margin-top: 6px;
+    word-break: break-all;
+  }
+
+  /* 検証結果セクション */
+  .verify-section {
+    padding: 10px 12px;
+    border-top: 2px solid #e0e0e0;
+  }
+  .verify-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .verify-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #555;
+  }
+  .verify-score {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+  .score-high { background: #E8F5E9; color: #2e7d32; }
+  .score-mid  { background: #FFF8E1; color: #f57f17; }
+  .score-low  { background: #FFEBEE; color: #c62828; }
+
+  .verify-ok {
+    background: #E8F5E9;
+    border: 1px solid #c8e6c9;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    color: #2e7d32;
+    font-size: 12px;
+  }
+
+  .issue-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .issue-card.severity-high { border-left: 3px solid #ea4335; }
+  .issue-card.severity-medium { border-left: 3px solid #fbbc04; }
+  .issue-card.severity-low { border-left: 3px solid #34a853; }
+
+  .issue-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .issue-field {
+    font-weight: bold;
+    font-size: 12px;
+  }
+  .issue-confidence {
+    font-size: 10px;
+    color: #888;
+  }
+  .issue-body {
+    padding: 8px;
+  }
+  .issue-comparison {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .issue-old {
+    background: #FFEBEE;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-decoration: line-through;
+    color: #c62828;
+    word-break: break-all;
+  }
+  .issue-arrow {
+    color: #999;
+    flex-shrink: 0;
+  }
+  .issue-new {
+    background: #E8F5E9;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: bold;
+    color: #2e7d32;
+    word-break: break-all;
+  }
+  .issue-reason {
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .issue-evidence {
+    font-size: 10px;
+    color: #888;
+    font-style: italic;
+  }
+  .issue-actions {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+  }
+  .btn-apply {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .btn-apply:hover { background: #1557b0; }
+  .btn-apply:disabled {
+    background: #ccc;
+    cursor: default;
+  }
+  .btn-skip {
+    background: #fff;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .btn-skip:hover { background: #f5f5f5; }
+
+  .verify-empty {
+    color: #999;
+    font-size: 12px;
+    text-align: center;
+    padding: 12px;
+  }
+
+  /* ローディング */
+  .loading {
+    text-align: center;
+    padding: 60px 0;
+    color: #999;
+  }
+  .spinner {
+    width: 24px; height: 24px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #1a73e8;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span>レシート確認</span>
+  <span class="row-num" id="rowNum">--</span>
+</div>
+
+<div id="content">
+  <div class="loading">
+    <div class="spinner"></div>
+    セルをクリックしてください
+  </div>
+</div>
+
+<script>
+  let lastRow = -1;
+  let lastVerificationJSON = '';
+  let polling = true;
+  let errorCount = 0;
+  const MAX_ERRORS = 5;
+  const POLL_INTERVAL = 800;
+
+  function poll() {
+    if (!polling) return;
+    google.script.run
+      .withSuccessHandler(onData)
+      .withFailureHandler(onError)
+      .getSelectedRowData();
+  }
+
+  function onData(data) {
+    errorCount = 0; // 成功したらリセット
+
+    if (!data) {
+      if (lastRow !== 0) {
+        lastRow = 0;
+        lastVerificationJSON = '';
+        document.getElementById('rowNum').textContent = '--';
+        document.getElementById('content').innerHTML =
+          '<div class="loading">セルをクリックしてください</div>';
+      }
+      scheduleNext();
+      return;
+    }
+
+    // 同じ行でも検証結果が変更された場合は更新する
+    var currentVerificationJSON = data.verificationJSON || '';
+    if (data.row === lastRow && currentVerificationJSON === lastVerificationJSON) {
+      scheduleNext();
+      return;
+    }
+    lastRow = data.row;
+    lastVerificationJSON = currentVerificationJSON;
+
+    document.getElementById('rowNum').textContent = 'Row ' + data.row;
+    render(data);
+    scheduleNext();
+  }
+
+  function onError(err) {
+    console.error(err);
+    errorCount++;
+    if (errorCount >= MAX_ERRORS) {
+      polling = false;
+      document.getElementById('content').innerHTML =
+        '<div class="loading">' +
+          '<div style="color:#ea4335;margin-bottom:12px;">接続が切れました</div>' +
+          '<button onclick="reconnect()" style="' +
+            'background:#1a73e8;color:#fff;border:none;padding:8px 20px;' +
+            'border-radius:4px;cursor:pointer;font-size:13px;">再接続</button>' +
+        '</div>';
+      return;
+    }
+    // エラー時はバックオフ（最大10秒）
+    var delay = Math.min(POLL_INTERVAL * Math.pow(2, errorCount), 10000);
+    setTimeout(poll, delay);
+  }
+
+  function reconnect() {
+    errorCount = 0;
+    lastRow = -1;
+    polling = true;
+    document.getElementById('content').innerHTML =
+      '<div class="loading"><div class="spinner"></div>再接続中...</div>';
+    poll();
+  }
+
+  function scheduleNext() {
+    setTimeout(poll, POLL_INTERVAL);
+  }
+
+  function render(d) {
+    // currentRow をグローバル変数に保存
+    window.currentRow = d.row;
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // HAND ステータスの場合は手書きモードを表示
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    if (d.status === 'HAND') {
+      // 通常セクションを非表示
+      document.getElementById('content').style.display = 'none';
+
+      // 手書きセクションを表示
+      document.getElementById('handwrittenSection').style.display = 'block';
+
+      // AI読取結果を表示（数値フォーマット付き）
+      document.getElementById('handTotalOrig').textContent =
+        (d.totalAmount || 0).toLocaleString();
+      document.getElementById('handDateOrig').textContent =
+        d.date || '不明';
+      document.getElementById('handStoreOrig').textContent =
+        d.storeName || '不明';
+
+      // 画像URLを設定（iframeの確実なリロードのため、一度クリアしてから設定）
+      var iframe = document.getElementById('handReceiptImage');
+      if (d.imageUrl) {
+        iframe.src = '';  // 一度クリア
+        setTimeout(function() {
+          iframe.src = d.imageUrl;
+          iframe.style.display = 'block';
+        }, 10);
+      } else {
+        iframe.src = '';
+        iframe.style.display = 'none';
+      }
+
+      // 入力フィールドをクリア
+      document.getElementById('handTotalAmount').value = '';
+      document.getElementById('handTaxable10').value = '';
+      document.getElementById('handTax10').value = '';
+      document.getElementById('handTaxable8').value = '';
+      document.getElementById('handTax8').value = '';
+
+      // 自動計算をチェック状態に
+      document.getElementById('autoCalcBreakdown').checked = true;
+      document.getElementById('manualBreakdown').style.display = 'none';
+
+      // フォーカスを総額入力欄に
+      setTimeout(function() {
+        document.getElementById('handTotalAmount').focus();
+      }, 100);
+
+      return; // 通常の表示処理をスキップ
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 通常モードを表示
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    // 手書きセクションを非表示
+    document.getElementById('handwrittenSection').style.display = 'none';
+
+    // 通常セクションを表示
+    document.getElementById('content').style.display = 'block';
+
+    // ステータスバッジ
+    let statusClass = 'status-unknown';
+    let statusText = d.status;
+    if (d.status.indexOf('OK') !== -1) statusClass = 'status-ok';
+    else if (d.status.indexOf('CHECK') !== -1) statusClass = 'status-check';
+    else if (d.status.indexOf('COMPOUND') !== -1) statusClass = 'status-compound';
+    else if (d.status.indexOf('ERROR') !== -1) statusClass = 'status-error';
+    else if (d.status.indexOf('HAND') !== -1) statusClass = 'status-unknown';
+
+    // プレビュー
+    let previewHtml = '<div class="preview-placeholder">プレビュー不可</div>';
+    let openLinkHtml = '';
+    if (d.fileId) {
+      if (d.mimeType && d.mimeType.startsWith('image/')) {
+        previewHtml = '<img src="https://drive.google.com/thumbnail?id=' +
+          d.fileId + '&sz=w300" alt="receipt">';
+      } else {
+        // PDF等はiframeプレビュー
+        previewHtml = '<iframe src="https://drive.google.com/file/d/' +
+          d.fileId + '/preview"></iframe>';
+      }
+      openLinkHtml = '<a class="open-link" href="' + d.fileUrl +
+        '" target="_blank">別タブで開く</a>';
+    }
+
+    // 金額フォーマット
+    function fmt(v) {
+      if (!v && v !== 0) return '-';
+      return Number(v).toLocaleString();
+    }
+
+    // Debug表示
+    let debugHtml = '';
+    if (d.debug) {
+      debugHtml = '<div class="debug-box">' + escHtml(d.debug) + '</div>';
+    } else {
+      debugHtml = '<div class="debug-box empty">エラーなし</div>';
+    }
+
+    let html = '' +
+      '<div class="preview-area">' + previewHtml + openLinkHtml + '</div>' +
+      '<div class="data-section">' +
+        '<div style="margin-bottom:6px">' +
+          '<span class="status-badge ' + statusClass + '">' + escHtml(statusText) + '</span>' +
+        '</div>' +
+        '<div class="store-name">' + escHtml(d.storeName) + '</div>' +
+        '<div class="meta-row">' +
+          '<span class="meta-label">日付</span>' +
+          '<span class="meta-value">' + escHtml(d.date) + '</span>' +
+        '</div>' +
+        '<div class="meta-row">' +
+          '<span class="meta-label">登録番号</span>' +
+          '<span class="meta-value">' + escHtml(d.invoiceNumber || '-') + '</span>' +
+        '</div>' +
+        '<div class="meta-row">' +
+          '<span class="meta-label">勘定科目</span>' +
+          '<span class="meta-value">' + escHtml(d.accountTitle) + ' / ' + escHtml(d.creditAccount) + '</span>' +
+        '</div>' +
+
+        '<table class="tax-table">' +
+          '<tr><th></th><th>対象額</th><th>消費税</th></tr>' +
+          '<tr><td>10%</td><td>' + fmt(d.subtotal10) + '</td><td>' + fmt(d.tax10) + '</td></tr>' +
+          '<tr><td>8%</td><td>' + fmt(d.subtotal8) + '</td><td>' + fmt(d.tax8) + '</td></tr>' +
+          '<tr><td>不課税</td><td colspan="2">' + fmt(d.nonTaxable) + '</td></tr>' +
+          '<tr style="font-weight:bold;border-top:2px solid #333">' +
+            '<td>総合計</td><td colspan="2">' + fmt(d.totalAmount) + '</td></tr>' +
+        '</table>' +
+
+        debugHtml +
+
+        '<div class="filename">' + escHtml(d.fileName) + '</div>' +
+      '</div>' +
+      renderVerificationSection(d);
+
+    document.getElementById('content').innerHTML = html;
+  }
+
+  function renderVerificationSection(d) {
+    // 検証データがなければ何も表示しない
+    if (!d.verificationJSON) {
+      return '';
+    }
+
+    var vData;
+    try {
+      vData = JSON.parse(d.verificationJSON);
+    } catch (e) {
+      return '';
+    }
+
+    var issues = vData.issues || [];
+    var score = typeof vData.overallConfidence === 'number' ? vData.overallConfidence : -1;
+
+    // スコアバッジ
+    var scoreClass = 'score-high';
+    if (score < 0.7) scoreClass = 'score-low';
+    else if (score < 0.9) scoreClass = 'score-mid';
+
+    var scoreHtml = score >= 0
+      ? '<span class="verify-score ' + scoreClass + '">' + (score * 100).toFixed(0) + '%</span>'
+      : '';
+
+    var html = '<div class="verify-section">' +
+      '<div class="verify-header">' +
+        '<span class="verify-title">AI検証結果</span>' +
+        scoreHtml +
+      '</div>';
+
+    if (issues.length === 0) {
+      html += '<div class="verify-ok">問題は検出されませんでした</div>';
+    } else {
+      for (var i = 0; i < issues.length; i++) {
+        html += renderIssueCard(d.row, issues[i], i);
+      }
+    }
+
+    // 手書き・複雑レシート注記
+    var notes = [];
+    if (vData.hasHandwriting) notes.push('手書き文字を検出');
+    if (vData.isComplexReceipt) notes.push('複雑なレシート（要再確認）');
+    if (notes.length > 0) {
+      html += '<div style="margin-top:6px;font-size:11px;color:#888;">' +
+              notes.join(' / ') + '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  function renderIssueCard(row, issue, idx) {
+    var sev = issue.severity || 'medium';
+    var conf = typeof issue.confidence === 'number' ? (issue.confidence * 100).toFixed(0) + '%' : '';
+
+    var fieldLabel = {
+      'storeName': '店名', 'date': '日付', 'totalAmount': '総合計',
+      'taxable10': '対象額(10%)', 'tax10': '消費税(10%)',
+      'taxable8': '対象額(8%)', 'tax8': '消費税(8%)',
+      'nonTaxable': '不課税', 'accountTitle': '勘定科目',
+      'registrationNumber': '登録番号', 'amount': '金額', 'tax': '税区分'
+    }[issue.field] || issue.field;
+
+    var html = '<div class="issue-card severity-' + sev + '">' +
+      '<div class="issue-head">' +
+        '<span class="issue-field">' + escHtml(fieldLabel) + '</span>' +
+        (conf ? '<span class="issue-confidence">確信度 ' + conf + '</span>' : '') +
+      '</div>' +
+      '<div class="issue-body">';
+
+    // 値の比較
+    if (issue.currentValue || issue.correctValue) {
+      html += '<div class="issue-comparison">' +
+        '<span class="issue-old">' + escHtml(String(issue.currentValue || '')) + '</span>' +
+        '<span class="issue-arrow">→</span>' +
+        '<span class="issue-new">' + escHtml(String(issue.correctValue || '')) + '</span>' +
+      '</div>';
+    }
+
+    if (issue.reason) {
+      html += '<div class="issue-reason">' + escHtml(issue.reason) + '</div>';
+    }
+    if (issue.evidence) {
+      html += '<div class="issue-evidence">' + escHtml(issue.evidence) + '</div>';
+    }
+
+    html += '</div>';
+
+    // アクションボタン（修正値がある場合のみ）
+    if (issue.correctValue !== undefined && issue.correctValue !== null && issue.field) {
+      var btnId = 'btn-apply-' + idx;
+      html += '<div class="issue-actions">' +
+        '<button class="btn-apply" id="' + btnId + '" onclick="applyFix(' +
+          row + ',\'' + escAttr(issue.field) + '\',\'' + escAttr(String(issue.correctValue)) +
+          '\',' + idx + ')">修正を適用</button>' +
+        '<button class="btn-skip" onclick="skipIssue(' + idx + ')">スキップ</button>' +
+      '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  function applyFix(row, field, value, idx) {
+    var btn = document.getElementById('btn-apply-' + idx);
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '適用中...';
+    }
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success) {
+          if (btn) {
+            btn.textContent = '適用済み';
+            btn.style.background = '#34a853';
+          }
+          // 行データを再読み込みさせるためlastRowをリセット
+          lastRow = -1;
+        } else {
+          if (btn) {
+            btn.textContent = '失敗';
+            btn.style.background = '#ea4335';
+            btn.disabled = false;
+            setTimeout(function() { btn.textContent = '修正を適用'; btn.style.background = ''; }, 2000);
+          }
+          console.error('修正失敗:', result ? result.message : 'unknown');
+        }
+      })
+      .withFailureHandler(function(err) {
+        if (btn) {
+          btn.textContent = '失敗';
+          btn.style.background = '#ea4335';
+          btn.disabled = false;
+          setTimeout(function() { btn.textContent = '修正を適用'; btn.style.background = ''; }, 2000);
+        }
+        console.error('修正エラー:', err);
+      })
+      .applyVerificationFix(row, field, value);
+  }
+
+  function skipIssue(idx) {
+    var card = document.querySelectorAll('.issue-card')[idx];
+    if (card) {
+      card.style.opacity = '0.4';
+      card.querySelector('.issue-actions').innerHTML =
+        '<span style="color:#999;font-size:11px;">スキップ済み</span>';
+    }
+  }
+
+  function escAttr(s) {
+    if (!s) return '';
+    return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  }
+
+  function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // 開始
+  poll();
+</script>
+
+<!-- 手書き領収証編集セクション（初期状態は非表示） -->
+<div id="handwrittenSection" style="display: none; padding: 20px;">
+
+  <h2 style="color: #FF6B00; border-bottom: 2px solid #FF6B00; padding-bottom: 10px;">
+    🖊️ 手書き領収証
+  </h2>
+
+  <div style="background: #FFF3E0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <p style="margin: 0; color: #E65100; font-weight: bold;">
+      📋 実際のレシートを見て、正しい金額を入力してください
+    </p>
+  </div>
+
+  <!-- レシート画像表示（PDF/画像の両方に対応） -->
+  <div style="margin-bottom: 20px; text-align: center;">
+    <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; border: 2px solid #ddd;">
+      <iframe
+        id="handReceiptImage"
+        src=""
+        style="width: 100%; height: 400px; border: none; border-radius: 4px; display: block;"
+        frameborder="0"
+      ></iframe>
+    </div>
+    <p style="margin: 8px 0 0 0; font-size: 12px; color: #666;">
+      👆 実際のレシートを見て入力してください
+    </p>
+  </div>
+
+  <!-- AI読取結果 -->
+  <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3 style="margin-top: 0; color: #666;">AI読取結果（参考）</h3>
+    <div style="font-family: monospace;">
+      <div>総額：<span id="handTotalOrig" style="font-weight: bold;"></span>円</div>
+      <div>日付：<span id="handDateOrig"></span></div>
+      <div>発行者：<span id="handStoreOrig"></span></div>
+    </div>
+  </div>
+
+  <!-- 修正フォーム -->
+  <div style="background: white; padding: 20px; border: 2px solid #FF6B00; border-radius: 8px;">
+    <h3 style="margin-top: 0; color: #FF6B00;">📝 修正入力</h3>
+
+    <!-- 総額 -->
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #333;">
+        総額（必須） <span style="color: red;">*</span>
+      </label>
+      <input
+        type="number"
+        id="handTotalAmount"
+        placeholder="例: 2200"
+        style="width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 4px; box-sizing: border-box;"
+      >
+    </div>
+
+    <!-- 自動計算オプション -->
+    <div style="margin-bottom: 20px; padding: 15px; background: #E3F2FD; border-radius: 4px;">
+      <label style="display: flex; align-items: center; cursor: pointer;">
+        <input type="checkbox" id="autoCalcBreakdown" checked style="margin-right: 10px; width: 18px; height: 18px;">
+        <span style="font-weight: bold; color: #1976D2;">10%税込として自動計算</span>
+      </label>
+      <p style="margin: 8px 0 0 28px; font-size: 12px; color: #666;">
+        チェックを外すと、内訳を手動入力できます
+      </p>
+    </div>
+
+    <!-- 手動入力（初期状態は非表示） -->
+    <div id="manualBreakdown" style="display: none;">
+      <h4 style="color: #666; margin-bottom: 15px;">内訳（手動入力）</h4>
+
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; color: #666;">10%税抜</label>
+        <input type="number" id="handTaxable10" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; color: #666;">10%税額</label>
+        <input type="number" id="handTax10" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; color: #666;">8%税抜</label>
+        <input type="number" id="handTaxable8" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; color: #666;">8%税額</label>
+        <input type="number" id="handTax8" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+      </div>
+    </div>
+
+    <!-- ボタン -->
+    <div style="display: flex; gap: 10px; margin-top: 25px;">
+      <button
+        onclick="confirmHandwritten()"
+        style="flex: 1; padding: 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;"
+      >
+        ✅ 確定して次へ
+      </button>
+      <button
+        onclick="skipHandwritten()"
+        style="flex: 1; padding: 15px; background: #9E9E9E; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;"
+      >
+        ⏩ スキップ
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentRow = -1;
+
+// 自動計算チェックボックスの制御
+document.getElementById('autoCalcBreakdown').addEventListener('change', function(e) {
+  document.getElementById('manualBreakdown').style.display =
+    e.target.checked ? 'none' : 'block';
+});
+
+// 手書き領収証の確定
+function confirmHandwritten() {
+  const totalAmount = Number(document.getElementById('handTotalAmount').value);
+
+  if (!totalAmount || totalAmount <= 0) {
+    alert('総額を正しく入力してください');
+    return;
+  }
+
+  const autoCalc = document.getElementById('autoCalcBreakdown').checked;
+
+  let taxable10, tax10, taxable8, tax8, nonTaxable;
+
+  if (autoCalc) {
+    // 10%税込として計算
+    taxable10 = Math.round(totalAmount / 1.1);
+    tax10 = totalAmount - taxable10;
+    taxable8 = 0;
+    tax8 = 0;
+    nonTaxable = 0;
+  } else {
+    // 手動入力
+    taxable10 = Number(document.getElementById('handTaxable10').value) || 0;
+    tax10 = Number(document.getElementById('handTax10').value) || 0;
+    taxable8 = Number(document.getElementById('handTaxable8').value) || 0;
+    tax8 = Number(document.getElementById('handTax8').value) || 0;
+    nonTaxable = 0;
+  }
+
+  // デバッグログ
+  console.log('[confirmHandwritten] currentRow:', window.currentRow);
+  console.log('[confirmHandwritten] totalAmount:', totalAmount);
+
+  // currentRow の確認
+  if (typeof window.currentRow === 'undefined') {
+    alert('エラー: 行が選択されていません');
+    return;
+  }
+
+  // ローディング表示
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+
+  console.log('[confirmHandwritten] google.script.run を呼び出します...');
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+      console.log('[confirmHandwritten] Success:', result);
+      btn.disabled = false;
+      btn.textContent = '✅ 確定して次へ';
+
+      if (result.success) {
+        alert('確定しました！');
+        loadNextRow(); // 次の行へ
+      } else {
+        alert('エラー: ' + (result.message || '不明なエラー'));
+      }
+    })
+    .withFailureHandler(function(error) {
+      console.log('[confirmHandwritten] Failure:', error);
+      btn.disabled = false;
+      btn.textContent = '✅ 確定して次へ';
+      alert('エラーが発生しました: ' + error.message);
+    })
+    .updateHandReceipt(
+      window.currentRow,
+      totalAmount,
+      taxable10,
+      tax10,
+      taxable8,
+      tax8,
+      nonTaxable
+    );
+}
+
+function skipHandwritten() {
+  if (confirm('この行をスキップしますか？')) {
+    loadNextRow();
+  }
+}
+
+function loadNextRow() {
+  // currentRow が未定義の場合は処理しない
+  if (typeof window.currentRow === 'undefined') {
+    console.log('currentRow が未定義です');
+    return;
+  }
+
+  // lastRow をリセットしてデータを再読み込み
+  lastRow = -1;
+  lastVerificationJSON = '';
+
+  // 次の行を自動的にポーリングで取得
+  // ユーザーが次のセルをクリックするまで待機
+  console.log('次の行を待機中...');
+}
+</script>
+
+</body>
+</html>
