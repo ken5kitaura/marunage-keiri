@@ -18,6 +18,22 @@
 function calculateAccountingData(ocr) {
   const totalAmount = parseAmount(ocr.totalAmount) || 0;
 
+  // 外貨レシートの場合：消費税計算をスキップ
+  if (ocr.currency && ocr.currency !== 'JPY') {
+    return {
+      subtotal10: 0,
+      tax10: 0,
+      subtotal8: 0,
+      tax8: 0,
+      rawNonTaxable: 0,
+      totalAmount: totalAmount,
+      isCompound: false,
+      hasInvoice: false,
+      taxType: 'foreign',
+      adjustmentNote: ''
+    };
+  }
+
   // 1. 不課税額（入湯税・軽油税等）を抽出
   let rawNonTaxable = 0;
   if (ocr._subtotalInfo) {

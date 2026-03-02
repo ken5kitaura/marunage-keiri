@@ -9,6 +9,15 @@ README.md
 !appsscript.json
 
 # Design specs & docs (not for GAS)
-specs/
-docs/
-debug_receipts/
+specs/**
+docs/**
+debug_receipts/**
+
+# Client wrapper scripts (manually deployed to each client spreadsheet)
+client-wrappers/**
+
+# Other GAS projects (each has its own .clasp.json)
+central-admin/**
+billing-management/**
+customer-management/**
+customer-management-kizuna/**

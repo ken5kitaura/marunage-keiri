@@ -253,6 +253,7 @@ storeNameは以下のルールで正規化し、集計しやすい「ブラン�
    - otherNonTaxable: その他の非課税・不課税金額
 7. suggestedAccountTitle: 推定される勘定科目（下記の許可リストから1つだけ選択）
 8. rawText: レシート全体のテキスト（デバッグ用、300文字まで）
+9. currency: 通貨コード（"JPY", "USD", "EUR", "SGD", "THB"等。日本語のレシートで円表記ならJPY。$表記ならUSD。€表記ならEUR。通貨記号や表記から判定。不明ならJPY）
 
 【勘定科目 - 許可リスト（厳守）】
 以下のリストに含まれる勘定科目のみ使用してください。このリスト以外の単語（配送費、システム料、食費など）は絶対に使用禁止です。
@@ -333,7 +334,8 @@ storeNameは以下のルールで正規化し、集計しやすい「ブラン�
     "otherNonTaxable": null
   },
   "suggestedAccountTitle": "消耗品費",
-  "rawText": "領収書のテキスト..."
+  "rawText": "領収書のテキスト...",
+  "currency": "JPY"
 }`;
 }
 
@@ -378,7 +380,9 @@ function parseGeminiResponse_(apiResult) {
       // 拡張情報（Logic_Accountingで使用）
       _subtotalInfo: parsed.subtotalInfo || null,
       // Geminiが推定した勘定科目
-      _suggestedAccountTitle: parsed.suggestedAccountTitle || null
+      _suggestedAccountTitle: parsed.suggestedAccountTitle || null,
+      // 通貨コード
+      currency: parsed.currency || 'JPY'
     };
 
   } catch (e) {

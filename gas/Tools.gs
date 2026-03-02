@@ -565,3 +565,47 @@ function driveApiRequest_(token, method, url, body) {
 
   return text ? JSON.parse(text) : {};
 }
+
+/**
+ * 【ワンタイム実行用】
+ * 本番シートの2行目〜最終行のA列〜P列（1〜16列目）の背景色をクリアする。
+ * Q列（17列目）以降は現状維持。
+ * 過去のコードで行全体に付けられた不要なハイライトを一括除去する。
+ *
+ * ラッパーGAS（各顧客スプシにバインド）から呼ばれる想定。
+ */
+function clearRowBackgroundColors() {
+  const ss = getTargetSpreadsheet_();
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAME.MAIN);
+  if (!sheet) {
+    console.log('シート「' + CONFIG.SHEET_NAME.MAIN + '」が見つかりません。');
+    return;
+  }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    console.log('データがありません。');
+    return;
+  }
+
+  const numRows = lastRow - 1;
+  // A列〜P列（1〜16列目）の背景色をnullでクリア
+  sheet.getRange(2, 1, numRows, 16).setBackground(null);
+
+  const message = '背景色クリア完了: ' + numRows + '行のA〜P列の背景色をリセットしました。';
+  console.log(message);
+}
+
+/**
+ * 外部からスプシIDを指定して背景色クリアを実行する。
+ * 中央管理GASからの呼び出し用。
+ * @param {string} spreadsheetId - 対象スプシのID
+ */
+function clearRowBackgroundColorsById(spreadsheetId) {
+  _targetSpreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  try {
+    clearRowBackgroundColors();
+  } finally {
+    _targetSpreadsheet = null;
+  }
+}

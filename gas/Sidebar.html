@@ -768,74 +768,102 @@
     </div>
   </div>
 
-  <!-- 修正フォーム -->
-  <div style="background: white; padding: 20px; border: 2px solid #FF6B00; border-radius: 8px;">
-    <h3 style="margin-top: 0; color: #FF6B00;">📝 修正入力</h3>
+  <!-- このまま承認ボタン（目立つ位置に配置） -->
+  <div style="margin-bottom: 20px;">
+    <button
+      id="btnApproveAsIs"
+      onclick="approveHandAsIs()"
+      style="width: 100%; padding: 16px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+    >
+      ✅ このまま承認
+    </button>
+    <p style="margin: 8px 0 0 0; font-size: 12px; color: #666; text-align: center;">
+      AI読取の金額が正しければ、このボタンだけでOK
+    </p>
+  </div>
 
-    <!-- 総額 -->
-    <div style="margin-bottom: 20px;">
-      <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #333;">
-        総額（必須） <span style="color: red;">*</span>
-      </label>
-      <input
-        type="number"
-        id="handTotalAmount"
-        placeholder="例: 2200"
-        style="width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 4px; box-sizing: border-box;"
-      >
+  <!-- 修正入力（折りたたみ式） -->
+  <div style="background: white; border: 2px solid #FF6B00; border-radius: 8px;">
+    <div
+      onclick="document.getElementById('handEditBody').style.display = document.getElementById('handEditBody').style.display === 'none' ? 'block' : 'none';"
+      style="padding: 15px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;"
+    >
+      <h3 style="margin: 0; color: #FF6B00;">📝 金額を修正する場合はこちら</h3>
+      <span style="color: #FF6B00; font-size: 20px;">▼</span>
     </div>
 
-    <!-- 自動計算オプション -->
-    <div style="margin-bottom: 20px; padding: 15px; background: #E3F2FD; border-radius: 4px;">
-      <label style="display: flex; align-items: center; cursor: pointer;">
-        <input type="checkbox" id="autoCalcBreakdown" checked style="margin-right: 10px; width: 18px; height: 18px;">
-        <span style="font-weight: bold; color: #1976D2;">10%税込として自動計算</span>
-      </label>
-      <p style="margin: 8px 0 0 28px; font-size: 12px; color: #666;">
-        チェックを外すと、内訳を手動入力できます
-      </p>
+    <div id="handEditBody" style="display: none; padding: 0 20px 20px 20px;">
+
+      <!-- 総額 -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #333;">
+          総額（必須） <span style="color: red;">*</span>
+        </label>
+        <input
+          type="number"
+          id="handTotalAmount"
+          placeholder="例: 2200"
+          style="width: 100%; padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 4px; box-sizing: border-box;"
+        >
+      </div>
+
+      <!-- 自動計算オプション -->
+      <div style="margin-bottom: 20px; padding: 15px; background: #E3F2FD; border-radius: 4px;">
+        <label style="display: flex; align-items: center; cursor: pointer;">
+          <input type="checkbox" id="autoCalcBreakdown" checked style="margin-right: 10px; width: 18px; height: 18px;">
+          <span style="font-weight: bold; color: #1976D2;">10%税込として自動計算</span>
+        </label>
+        <p style="margin: 8px 0 0 28px; font-size: 12px; color: #666;">
+          チェックを外すと、内訳を手動入力できます
+        </p>
+      </div>
+
+      <!-- 手動入力（初期状態は非表示） -->
+      <div id="manualBreakdown" style="display: none;">
+        <h4 style="color: #666; margin-bottom: 15px;">内訳（手動入力）</h4>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; color: #666;">10%税抜</label>
+          <input type="number" id="handTaxable10" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; color: #666;">10%税額</label>
+          <input type="number" id="handTax10" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; color: #666;">8%税抜</label>
+          <input type="number" id="handTaxable8" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; color: #666;">8%税額</label>
+          <input type="number" id="handTax8" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <!-- ボタン -->
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button
+          id="btnConfirmHand"
+          onclick="confirmHandwritten()"
+          style="flex: 1; padding: 15px; background: #FF6B00; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;"
+        >
+          📝 修正して確定
+        </button>
+      </div>
     </div>
+  </div>
 
-    <!-- 手動入力（初期状態は非表示） -->
-    <div id="manualBreakdown" style="display: none;">
-      <h4 style="color: #666; margin-bottom: 15px;">内訳（手動入力）</h4>
-
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; color: #666;">10%税抜</label>
-        <input type="number" id="handTaxable10" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-      </div>
-
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; color: #666;">10%税額</label>
-        <input type="number" id="handTax10" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-      </div>
-
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; color: #666;">8%税抜</label>
-        <input type="number" id="handTaxable8" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-      </div>
-
-      <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; color: #666;">8%税額</label>
-        <input type="number" id="handTax8" placeholder="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
-      </div>
-    </div>
-
-    <!-- ボタン -->
-    <div style="display: flex; gap: 10px; margin-top: 25px;">
-      <button
-        onclick="confirmHandwritten()"
-        style="flex: 1; padding: 15px; background: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;"
-      >
-        ✅ 確定して次へ
-      </button>
-      <button
-        onclick="skipHandwritten()"
-        style="flex: 1; padding: 15px; background: #9E9E9E; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer;"
-      >
-        ⏩ スキップ
-      </button>
-    </div>
+  <!-- スキップボタン -->
+  <div style="margin-top: 15px;">
+    <button
+      onclick="skipHandwritten()"
+      style="width: 100%; padding: 12px; background: #9E9E9E; color: white; border: none; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;"
+    >
+      ⏩ スキップ
+    </button>
   </div>
 
 </div>
@@ -899,11 +927,10 @@ function confirmHandwritten() {
     .withSuccessHandler(function(result) {
       console.log('[confirmHandwritten] Success:', result);
       btn.disabled = false;
-      btn.textContent = '✅ 確定して次へ';
+      btn.textContent = '📝 修正して確定';
 
       if (result.success) {
-        alert('確定しました！');
-        loadNextRow(); // 次の行へ
+        loadNextRow(); // 次の行へ（ダイアログなしで自動遷移）
       } else {
         alert('エラー: ' + (result.message || '不明なエラー'));
       }
@@ -911,7 +938,7 @@ function confirmHandwritten() {
     .withFailureHandler(function(error) {
       console.log('[confirmHandwritten] Failure:', error);
       btn.disabled = false;
-      btn.textContent = '✅ 確定して次へ';
+      btn.textContent = '📝 修正して確定';
       alert('エラーが発生しました: ' + error.message);
     })
     .updateHandReceipt(
@@ -923,6 +950,35 @@ function confirmHandwritten() {
       tax8,
       nonTaxable
     );
+}
+
+// 手書き領収証をAI読取結果のまま承認
+function approveHandAsIs() {
+  if (typeof window.currentRow === 'undefined') {
+    alert('エラー: 行が選択されていません');
+    return;
+  }
+
+  var btn = document.getElementById('btnApproveAsIs');
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+      btn.disabled = false;
+      btn.textContent = '✅ このまま承認';
+      if (result.success) {
+        loadNextRow(); // ダイアログなしで次の行へ
+      } else {
+        alert('エラー: ' + (result.message || '不明なエラー'));
+      }
+    })
+    .withFailureHandler(function(error) {
+      btn.disabled = false;
+      btn.textContent = '✅ このまま承認';
+      alert('エラーが発生しました: ' + error.message);
+    })
+    .approveHandReceipt(window.currentRow);
 }
 
 function skipHandwritten() {

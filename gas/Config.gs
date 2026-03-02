@@ -55,6 +55,70 @@ const CONFIG = {
 };
 
 /**
+ * 管理GASからの外部実行時に、処理対象のスプシを保持するグローバル変数。
+ * nullの場合は従来通りgetActiveSpreadsheet()が使われる。
+ * @type {GoogleAppsScript.Spreadsheet.Spreadsheet|null}
+ */
+var _targetSpreadsheet = null;
+var _isBatchMode = false;
+var _batchMaxTimeMs = null;
+
+/**
+ * 処理対象のスプシを取得する共通関数。
+ * _targetSpreadsheet がセットされていればそれを返し、
+ * そうでなければ getActiveSpreadsheet() を返す。
+ * @return {GoogleAppsScript.Spreadsheet.Spreadsheet}
+ */
+function getTargetSpreadsheet_() {
+  return _targetSpreadsheet || SpreadsheetApp.getActiveSpreadsheet();
+}
+
+/**
+ * 外部からスプシIDを指定してレシート処理を実行する。
+ * 管理GASからの一括実行用。
+ * @param {string} spreadsheetId - 対象スプシのID
+ */
+function processReceiptsById(spreadsheetId) {
+  _targetSpreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  _isBatchMode = true;
+  try {
+    processReceipts();
+  } finally {
+    _targetSpreadsheet = null;
+    _isBatchMode = false;
+  }
+}
+
+/**
+ * 外部からスプシIDを指定してAI検証を実行する。
+ * 管理GASからの一括実行用。
+ * @param {string} spreadsheetId - 対象スプシのID
+ * @param {number} [maxTimeMs] - 実行時間の上限（ms）。中央管理側の残り時間を渡す。
+ */
+function runAutoVerificationById(spreadsheetId, maxTimeMs) {
+  _targetSpreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  _isBatchMode = true;
+  if (maxTimeMs) {
+    _batchMaxTimeMs = maxTimeMs;
+  }
+  try {
+    return runAutoVerification();
+  } finally {
+    _targetSpreadsheet = null;
+    _isBatchMode = false;
+    _batchMaxTimeMs = null;
+  }
+}
+
+/**
+ * バッチモード判定（中央管理GASからの呼び出し時にtrue）
+ * @return {boolean}
+ */
+function isBatchMode() {
+  return _isBatchMode === true;
+}
+
+/**
  * 設定値を取得（Configシート → ScriptProperties の順で探索）
  * @param {string} key - プロパティキー
  * @param {string} defaultValue - デフォルト値
@@ -63,7 +127,7 @@ const CONFIG = {
 function getConfig_(key, defaultValue) {
   // 1. Configシートから取得を試みる
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getTargetSpreadsheet_();
     const sheet = ss.getSheetByName('Config');
     if (sheet) {
       const lastRow = sheet.getLastRow();
@@ -132,7 +196,7 @@ function getProcessedFolderId_() {
  * @return {Array<FolderConfig>}
  */
 function loadFolderConfigs_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getTargetSpreadsheet_();
   const sheet = ss.getSheetByName(CONFIG.SHEET_NAME.FOLDERS);
 
   if (!sheet) {
@@ -156,7 +220,17 @@ function loadFolderConfigs_() {
       }];
     }
 
-    throw new Error('フォルダIDが設定されていません。ConfigシートにFOLDER_ID_RECEIPTSを設定するか、Config_Foldersシートを作成してください。');
+    // フォールバック: ClientConfigシートから取得を試みる
+    const clientFolderId = getClientConfig_('RECEIPT_FOLDER_ID', '');
+    if (clientFolderId) {
+      return [{
+        folderId: clientFolderId,
+        label: '現金',
+        creditAccount: '現金'
+      }];
+    }
+
+    throw new Error('フォルダIDが設定されていません。ConfigシートにFOLDER_ID_RECEIPTSを設定するか、Config_FoldersまたはClientConfigシートを作成してください。');
   }
 
   const lastRow = sheet.getLastRow();
@@ -187,7 +261,7 @@ function loadFolderConfigs_() {
  * @return {Array<MappingRule>}
  */
 function loadMappingRules_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getTargetSpreadsheet_();
   const sheet = ss.getSheetByName(CONFIG.SHEET_NAME.MAPPING);
 
   // Config_Mappingシートが無い場合は空配列を返す
@@ -327,4 +401,150 @@ function createConfigMappingSheet() {
   sheet.setColumnWidth(3, 150);
 
   SpreadsheetApp.getUi().alert('Config_Mappingシートを作成しました。');
+}
+
+// ============================================================
+// ClientConfig（顧客固有設定）
+// ============================================================
+
+/**
+ * ClientConfigシートから設定値を取得（内部用）
+ * @param {string} key - 設定キー
+ * @param {string} [defaultValue] - デフォルト値
+ * @return {string}
+ */
+function getClientConfig_(key, defaultValue) {
+  try {
+    const ss = getTargetSpreadsheet_();
+    const sheet = ss.getSheetByName('ClientConfig');
+    if (!sheet) {
+      console.warn('ClientConfigシートが見つかりません');
+      return defaultValue || '';
+    }
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 1) return defaultValue || '';
+    
+    const data = sheet.getRange(1, 1, lastRow, 2).getValues();
+    for (const row of data) {
+      if (String(row[0]).trim() === key) {
+        const value = String(row[1] || '').trim();
+        if (value) return value;
+      }
+    }
+  } catch (e) {
+    console.error('ClientConfig読み込みエラー: ' + e.message);
+  }
+  
+  return defaultValue || '';
+}
+
+/**
+ * 通帳フォルダIDを取得（内部用）
+ * @return {string}
+ */
+function getPassbookFolderId_() {
+  return getClientConfig_('PASSBOOK_FOLDER_ID', '');
+}
+
+/**
+ * 通帳フォルダIDを取得（ライブラリ公開用）
+ * @return {string}
+ */
+function getPassbookFolderId() {
+  return getClientConfig_('PASSBOOK_FOLDER_ID', '');
+}
+
+/**
+ * 領収書フォルダIDを取得（内部用）
+ * @return {string}
+ */
+function getReceiptFolderId_() {
+  return getClientConfig_('RECEIPT_FOLDER_ID', '');
+}
+
+/**
+ * 領収書フォルダIDを取得（ライブラリ公開用）
+ * @return {string}
+ */
+function getReceiptFolderId() {
+  return getClientConfig_('RECEIPT_FOLDER_ID', '');
+}
+
+/**
+ * クレカ明細フォルダIDを取得（内部用）
+ * @return {string}
+ */
+function getCCStatementFolderId_() {
+  return getClientConfig_('CC_STATEMENT_FOLDER_ID', '');
+}
+
+/**
+ * クレカ明細フォルダIDを取得（ライブラリ公開用）
+ * @return {string}
+ */
+function getCCStatementFolderId() {
+  return getClientConfig_('CC_STATEMENT_FOLDER_ID', '');
+}
+
+/**
+ * ClientConfigシートを作成
+ */
+function createClientConfigSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('ClientConfig');
+
+  if (sheet) {
+    console.log('ClientConfigシートは既に存在します。');
+    return sheet;
+  }
+
+  sheet = ss.insertSheet('ClientConfig');
+
+  // 設定項目を追加（ヘッダーなし、キー・値の2列構成）
+  const configItems = [
+    ['PASSBOOK_FOLDER_ID', ''],
+    ['RECEIPT_FOLDER_ID', ''],
+    ['CC_STATEMENT_FOLDER_ID', '']
+  ];
+  
+  sheet.getRange(1, 1, configItems.length, 2).setValues(configItems);
+
+  // 列幅調整
+  sheet.setColumnWidth(1, 200);
+  sheet.setColumnWidth(2, 350);
+
+  // A列を太字に
+  sheet.getRange(1, 1, configItems.length, 1).setFontWeight('bold');
+
+  console.log('ClientConfigシートを作成しました。');
+  return sheet;
+}
+
+/**
+ * ClientConfigシートに値を設定
+ * @param {string} key - 設定キー
+ * @param {string} value - 値
+ */
+function setClientConfig_(key, value) {
+  const ss = getTargetSpreadsheet_();
+  let sheet = ss.getSheetByName('ClientConfig');
+  
+  if (!sheet) {
+    sheet = createClientConfigSheet();
+  }
+  
+  const lastRow = sheet.getLastRow();
+  const data = lastRow > 0 ? sheet.getRange(1, 1, lastRow, 2).getValues() : [];
+  
+  // 既存のキーを探す
+  for (let i = 0; i < data.length; i++) {
+    if (String(data[i][0]).trim() === key) {
+      sheet.getRange(i + 1, 2).setValue(value);
+      return;
+    }
+  }
+  
+  // 新規追加
+  sheet.appendRow([key, value]);
 }
