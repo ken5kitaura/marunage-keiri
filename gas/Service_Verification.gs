@@ -191,15 +191,6 @@ function verifyOneRow_(sheet, row, apiKey) {
     // ステータスを確認（手書きレシートはスキップ）
     const status = sheet.getRange(row, 2).getValue();
 
-    if (status === 'HAND') {
-      Logger.log('Row ' + row + ': 手書き領収証のため検証スキップ');
-
-      // 検証結果欄に説明を書く
-      sheet.getRange(row, 19).setValue('🖊️ 手書き領収証（目視確認してください）');
-      sheet.getRange(row, 20).setValue('');
-
-      return; // 検証処理を行わずに終了
-    }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // ステップ1: 画像ファイルを取得
@@ -1509,7 +1500,7 @@ function writeVerificationError_(sheet, row, errorMsg) {
   sheet.getRange(row, 17, 1, 4).setValues([
     ['🔴エラー', 0, 'エラー: ' + errorMsg, JSON.stringify(errorResult, null, 2)]
   ]);
-  sheet.getRange(row, 17, 1, 4).setBackground('#FFEBEE');
+  sheet.getRange(row, 17).setBackground('#FFEBEE');
 }
 
 // ============================================================
@@ -1549,15 +1540,20 @@ var FIELD_COLUMN_MAP_ = {
  *   3. severity: high の問題がゼロ
  */
 function runAutoVerification() {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(1000)) {
-    console.log('runAutoVerification: Skip - already running');
-    return;
+  const batchMode = isBatchMode();
+  let lock = null;
+
+  if (!batchMode) {
+    lock = LockService.getScriptLock();
+    if (!lock.tryLock(1000)) {
+      console.log('runAutoVerification: Skip - already running');
+      return;
+    }
   }
 
   try {
     const startTime = Date.now();
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getTargetSpreadsheet_();
     const sheet = ss.getSheetByName(CONFIG.SHEET_NAME.MAIN);
 
     if (!sheet) {
@@ -1575,8 +1571,12 @@ function runAutoVerification() {
     ensureVerificationColumns_(sheet);
 
     // 全データを一括取得（パフォーマンス最適化）
-    const lastCol = Math.max(sheet.getLastColumn(), 20);
+    const lastCol = sheet.getLastColumn();
     const data = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+
+    // ヘッダーから通貨列を動的に取得
+    const header = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+    const currencyColIdx = findHeaderIndex(header, ['通貨']); // 0-indexed, -1 if not found
 
     // 対象行を抽出
     const targetRows = [];
@@ -1587,10 +1587,12 @@ function runAutoVerification() {
       const status = rawStatus.replace(/^[🟢🔴🟡🟠🖊️]+/, '');
       const verificationStatus = String(row[16] || ''); // 17列目（0-indexed: 16）
       const nonTaxable = Number(row[11]) || 0; // 12列目（0-indexed: 11）
+      const currency = currencyColIdx >= 0 ? String(row[currencyColIdx] || '').trim() : '';
 
       // 対象判定
       if (verificationStatus !== '') continue; // 既に検証済み
-      if (status === 'CHECK' || status === 'ERROR') {
+      if (currency !== '' && currency !== 'JPY') continue; // 外貨レシートはスキップ
+      if (status === 'CHECK' || status === 'ERROR' || status === 'HAND') {
         targetRows.push(i + 2); // シートの行番号（1-indexed、ヘッダー+1）
       } else if (status === 'COMPOUND' && nonTaxable === 0) {
         // COMPOUNDは不課税0円のみ対象
@@ -1605,19 +1607,31 @@ function runAutoVerification() {
     let pendingCount = 0;
     let errorCount = 0;
 
+    // バッチモード時は中央管理側から渡された残り時間を使う
+    const effectiveMaxTime = (_batchMaxTimeMs && _batchMaxTimeMs < CONFIG.PROCESSING.MAX_EXECUTION_TIME_MS)
+      ? _batchMaxTimeMs
+      : CONFIG.PROCESSING.MAX_EXECUTION_TIME_MS;
+    if (_batchMaxTimeMs) {
+      console.log('runAutoVerification: effectiveMaxTime=' + Math.round(effectiveMaxTime / 1000) + '秒（中央管理から制限）');
+    }
+
     for (const row of targetRows) {
       // タイムアウトチェック
-      if (Date.now() - startTime > CONFIG.PROCESSING.MAX_EXECUTION_TIME_MS) {
+      if (Date.now() - startTime > effectiveMaxTime) {
         console.log('runAutoVerification: タイムアウト（' + processedCount + '/' + targetRows.length + '件処理済み）');
 
-        // 未処理行が残っている場合、継続トリガーを設定
-        if (processedCount < targetRows.length) {
-          deleteContinuationTrigger_('runAutoVerification');
-          ScriptApp.newTrigger('runAutoVerification')
-            .timeBased()
-            .after(1 * 60 * 1000)  // 1分後
-            .create();
-          console.log('継続トリガーを設定しました（1分後に再実行）');
+        // バッチモード時は継続トリガーを設定しない（中央管理側で管理）
+        if (!batchMode && processedCount < targetRows.length) {
+          try {
+            deleteContinuationTrigger_('runAutoVerification_continue');
+            ScriptApp.newTrigger('runAutoVerification_continue')
+              .timeBased()
+              .after(1 * 60 * 1000)
+              .create();
+            console.log('継続トリガーを設定しました（1分後に再実行）');
+          } catch (e) {
+            console.warn('継続トリガー設定失敗: ' + e.message);
+          }
           try {
             ss.toast('タイムアウト。1分後に自動で続きを実行します。', '継続予定', 5);
           } catch (e) { /* トリガー実行時はUI非対応 */ }
@@ -1652,10 +1666,14 @@ function runAutoVerification() {
       }
     }
 
-    // 全件処理完了の場合、継続トリガーを削除
-    if (processedCount >= targetRows.length || targetRows.length === 0) {
-      deleteContinuationTrigger_('runAutoVerification');
-      console.log('全件処理完了。継続トリガーを削除しました。');
+    // 全件処理完了の場合、継続トリガーを削除（バッチモード時はスキップ）
+    if (!batchMode && (processedCount >= targetRows.length || targetRows.length === 0)) {
+      try {
+        deleteContinuationTrigger_('runAutoVerification_continue');
+        console.log('全件処理完了。継続トリガーを削除しました。');
+      } catch (e) {
+        console.warn('継続トリガー削除失敗: ' + e.message);
+      }
     }
 
     const summary = 'runAutoVerification 完了: ' +
@@ -1666,13 +1684,25 @@ function runAutoVerification() {
       'エラー=' + errorCount + '件';
     console.log(summary);
 
-    // UI表示（トリガー実行時はUIがないためtry-catch）
-    try {
-      SpreadsheetApp.getUi().alert(summary);
-    } catch (e) { /* トリガー実行時はUI非対応 */ }
+    // UI表示（バッチモード・トリガー実行時はUI非対応）
+    if (!batchMode) {
+      try {
+        SpreadsheetApp.getActiveSpreadsheet().toast(summary, '自動検証完了', 5);
+      } catch (e) { /* トリガー実行時はUI非対応 */ }
+    }
+
+    // 戻り値: 中央管理側がタイムアウト途中返却を検知するために使う
+    return {
+      total: targetRows.length,
+      processed: processedCount,
+      approved: approvedCount,
+      pending: pendingCount,
+      errors: errorCount,
+      timedOut: (processedCount < targetRows.length && Date.now() - startTime > effectiveMaxTime)
+    };
 
   } finally {
-    lock.releaseLock();
+    if (lock) lock.releaseLock();
   }
 }
 
@@ -1684,7 +1714,7 @@ function runAutoVerification() {
  * 選択された行を手動で承認する。
  * 人間が17列目（検証結果）を確認した後に使うボタン。
  *
- * 対象: CHECK / ERROR / COMPOUND 行のみ（OKやHANDは何もしない）
+ * 対象: CHECK / ERROR / COMPOUND / HAND 行（OKは何もしない）
  * 複数の選択範囲（Ctrl+クリック）にも対応。
  */
 function approveSelectedRows() {
@@ -1736,8 +1766,8 @@ function approveSelectedRows() {
 
     console.log('行' + row + ': rawStatus="' + rawStatus + '", status="' + status + '"');
 
-    // CHECK / ERROR / COMPOUND のみ承認可能
-    if (status !== 'CHECK' && status !== 'ERROR' && status !== 'COMPOUND') {
+    // CHECK / ERROR / COMPOUND / HAND のみ承認可能
+    if (status !== 'CHECK' && status !== 'ERROR' && status !== 'COMPOUND' && status !== 'HAND') {
       console.log('行' + row + ': スキップ（ステータスが対象外）');
       skippedCount++;
       continue;
@@ -1751,7 +1781,7 @@ function approveSelectedRows() {
   const msg = '承認完了: ' + approvedCount + '件' +
               (skippedCount > 0 ? '（スキップ: ' + skippedCount + '件）' : '');
   console.log('approveSelectedRows 結果: ' + msg);
-  ui.alert(msg);
+  SpreadsheetApp.getActiveSpreadsheet().toast(msg, '承認完了', 3);
 }
 
 // ============================================================
@@ -1775,11 +1805,13 @@ function applyApproval_(sheet, row, label) {
 
   // 17列目にラベルを書き込み
   sheet.getRange(row, 17).setValue(label);
-  sheet.getRange(row, 17).setBackground('#d4edda'); // 緑
 
-  // 行の背景色をリセット（OK行のデフォルト = 白）
+  // 行全体の背景色をクリア（OK = 白）
   const lastCol = Math.max(sheet.getLastColumn(), 20);
   sheet.getRange(row, 1, 1, lastCol).setBackground(null);
+
+  // Q列（17列目）だけ緑に戻す
+  sheet.getRange(row, 17).setBackground('#d4edda');
 
   // Google Drive上のファイル名プレフィックスを変更
   renameFilePrefix_(sheet, row);
@@ -1808,9 +1840,9 @@ function renameFilePrefix_(sheet, row) {
 
     // プレフィックスを [OK] に置換
     let newName = currentName;
-    newName = newName.replace(/^\[(CHK|ERR|CMP)\]/, '[OK]');
+    newName = newName.replace(/^\[(CHK|ERR|CMP|HAND)\]/, '[OK]');
     // 旧形式の絵文字プレフィックスにも対応
-    newName = newName.replace(/^[🔴🟡]/, '🟢');
+    newName = newName.replace(/^[🔴🟡🖊️]/, '🟢');
 
     if (newName !== currentName) {
       file.setName(newName);
@@ -1901,19 +1933,28 @@ function shouldAutoApprove_(verResult) {
 // ============================================================
 
 /**
- * 指定した関数名の時間ベーストリガーを削除
- * runAutoVerification の継続実行で使用する。
- * @param {string} functionName
+ * 継続用トリガー（_continue サフィックス付き）のみを削除する。
+ * 定期トリガー（毎時・毎日など）は削除しない。
+ * @param {string} continuationFunctionName - 継続用関数名（例: 'runAutoVerification_continue'）
  */
-function deleteContinuationTrigger_(functionName) {
+function deleteContinuationTrigger_(continuationFunctionName) {
   const triggers = ScriptApp.getProjectTriggers();
   for (const trigger of triggers) {
-    if (trigger.getHandlerFunction() === functionName &&
-        trigger.getEventType() === ScriptApp.EventType.CLOCK) {
+    if (trigger.getHandlerFunction() === continuationFunctionName) {
       ScriptApp.deleteTrigger(trigger);
-      console.log('既存の継続トリガーを削除: ' + functionName);
+      console.log('既存の継続トリガーを削除: ' + continuationFunctionName);
     }
   }
+}
+
+/**
+ * runAutoVerification の継続実行用ラッパー関数。
+ * after() トリガーから呼ばれる。定期トリガーとは別名なので
+ * 削除時に定期トリガーを巻き込まない。
+ */
+function runAutoVerification_continue() {
+  console.log('runAutoVerification_continue: 継続実行を開始');
+  runAutoVerification();
 }
 
 // ============================================================
@@ -1950,15 +1991,11 @@ function applyVerificationFix(row, field, value) {
     // セルに書き込み
     sheet.getRange(row, col).setValue(cellValue);
 
-    // 検証ステータスを「修正済み」に更新
-    var currentStatus = String(sheet.getRange(row, 17).getValue() || '');
-    if (currentStatus && !currentStatus.includes('修正済')) {
-      sheet.getRange(row, 17).setValue('🔧修正済み');
-      sheet.getRange(row, 17, 1, 4).setBackground('#E3F2FD');
-    }
+    // 修正適用と同時に承認（A列をOKに変更）
+    applyApproval_(sheet, row, '🔧 修正承認');
 
-    console.log('修正適用: 行' + row + ' ' + field + ' = ' + cellValue);
-    return { success: true, message: field + ' を修正しました' };
+    console.log('修正承認: 行' + row + ' ' + field + ' = ' + cellValue);
+    return { success: true, message: field + ' を修正し、承認しました' };
 
   } catch (e) {
     console.error('修正適用エラー: ' + e.message);

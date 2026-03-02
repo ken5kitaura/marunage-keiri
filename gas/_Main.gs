@@ -18,7 +18,7 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
 
   ui.createMenu('レシート処理')
-    .addItem('レシート読み込み開始', 'processReceipts')
+    .addItem('📥 未処理を一括読み込み', 'processAll')
     .addSeparator()
     .addItem('未検証行を一括検証', 'runAutoVerification')
     .addItem('選択行を検証', 'verifySelectedRows')
@@ -110,10 +110,15 @@ function promptStatementSpreadsheetId() {
  * レシート処理メイン（多重実行ガード付き）
  */
 function processReceipts() {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(1000)) {
-    console.log('Skip: already running');
-    return;
+  const batchMode = isBatchMode();
+  let lock = null;
+
+  if (!batchMode) {
+    lock = LockService.getScriptLock();
+    if (!lock.tryLock(1000)) {
+      console.log('Skip: already running');
+      return;
+    }
   }
 
   try {
@@ -186,15 +191,19 @@ function processReceipts() {
     }
 
     if (processedCount === 0 && !hasNext) {
-      try {
-        SpreadsheetApp.getUi().alert('処理完了: 未処理ファイルはありません。');
-      } catch (e) { /* UI非対応環境 */ }
+      if (!batchMode) {
+        try {
+          SpreadsheetApp.getUi().alert('処理完了: 未処理ファイルはありません。');
+        } catch (e) { /* UI非対応環境 */ }
+      } else {
+        console.log('未処理ファイルなし');
+      }
     } else {
       console.log('処理完了: ' + processedCount + '件');
     }
 
   } finally {
-    lock.releaseLock();
+    if (lock) lock.releaseLock();
   }
 }
 
@@ -230,6 +239,16 @@ function processOneReceipt_(file, folderConfig) {
     console.log('手書き領収証と判定: ' + fileName);
   }
 
+  // 外貨レシート判定
+  const currency = ocrResult.currency || 'JPY';
+  let debugInfoStr = debugInfo;
+  if (currency !== 'JPY') {
+    status = 'CHECK';
+    const foreignNote = '外貨レシート（' + currency + '）- クレカ明細との照合が必要';
+    debugInfoStr = debugInfoStr ? debugInfoStr + ' | ' + foreignNote : foreignNote;
+    console.log('外貨レシートと判定: ' + fileName + ' (' + currency + ')');
+  }
+
   // Step 5: 摘要欄の生成（EC店舗の場合は品名を付加）
   const summaryStoreName = buildSummaryStoreName_(ocrResult.storeName, ocrResult.items);
 
@@ -249,7 +268,8 @@ function processOneReceipt_(file, folderConfig) {
     creditAccount: folderConfig.creditAccount,
     folderLabel: folderConfig.label,
     reconcile: null,
-    debugInfo: debugInfo
+    debugInfo: debugInfoStr,
+    currency: currency
   };
 
   // Step 7: スプレッドシートに出力
@@ -524,23 +544,180 @@ function buildSummaryStoreName_(storeName, items) {
 }
 
 /**
- * 継続処理のトリガーをスケジュール
- * @param {string} handlerName
+ * 継続処理のトリガーをスケジュール。
+ * 定期トリガー（毎時・毎日）を巻き込まないよう、
+ * 継続実行には _continue サフィックス付きの別名関数を使う。
+ * @param {string} handlerName - 元の関数名（例: 'processReceipts'）
  */
 function scheduleContinuation_(handlerName) {
-  // 既存の同一トリガーを削除
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(t => {
-    if (t.getHandlerFunction() === handlerName) {
-      ScriptApp.deleteTrigger(t);
-    }
-  });
+  // バッチモード時は継続トリガーを設定しない（中央管理GAS側で管理）
+  if (isBatchMode()) {
+    console.log('バッチモード: 継続トリガーをスキップ（' + handlerName + '）');
+    return;
+  }
 
-  // 新しいトリガーを作成
-  ScriptApp.newTrigger(handlerName)
-    .timeBased()
-    .after(CONFIG.PROCESSING.RETRY_DELAY_MINUTES * 60 * 1000)
-    .create();
+  const continuationName = handlerName + '_continue';
+
+  try {
+    // 既存の継続トリガーのみ削除（定期トリガーは残す）
+    const triggers = ScriptApp.getProjectTriggers();
+    triggers.forEach(t => {
+      if (t.getHandlerFunction() === continuationName) {
+        ScriptApp.deleteTrigger(t);
+        console.log('既存の継続トリガーを削除: ' + continuationName);
+      }
+    });
+
+    // 継続用トリガーを作成（_continue 関数を呼ぶ）
+    ScriptApp.newTrigger(continuationName)
+      .timeBased()
+      .after(CONFIG.PROCESSING.RETRY_DELAY_MINUTES * 60 * 1000)
+      .create();
+    console.log('継続トリガーを設定: ' + continuationName + '（' + CONFIG.PROCESSING.RETRY_DELAY_MINUTES + '分後）');
+  } catch (e) {
+    console.warn('継続トリガー設定失敗: ' + e.message);
+  }
+}
+
+/**
+ * processReceipts の継続実行用ラッパー関数。
+ * after() トリガーから呼ばれる。定期トリガーとは別名なので
+ * 削除時に定期トリガーを巻き込まない。
+ */
+function processReceipts_continue() {
+  console.log('processReceipts_continue: 継続実行を開始');
+  processReceipts();
+}
+
+// ============================================================
+// 一括読み込み（レシート＋通帳＋クレカ明細）
+// ============================================================
+
+/**
+ * 未処理ファイルを一括読み込み
+ * 領収書フォルダ・通帳フォルダ・クレカ明細フォルダの
+ * 未処理ファイルを1回の操作ですべて読み込む
+ */
+function processAll() {
+  const batchMode = isBatchMode();
+  let lock = null;
+
+  if (!batchMode) {
+    lock = LockService.getScriptLock();
+    if (!lock.tryLock(1000)) {
+      console.log('Skip: already running');
+      return;
+    }
+  }
+
+  try {
+    const ss = getTargetSpreadsheet_();
+    const results = {
+      receipts: 0,
+      passbooks: 0,
+      ccStatements: 0,
+      errors: []
+    };
+
+    // ─────────────────────────────
+    // 1. レシート処理
+    // ─────────────────────────────
+    console.log('━━━ レシート処理 開始 ━━━');
+    try {
+      const folderConfigs = loadFolderConfigs_();
+      for (const folderConfig of folderConfigs) {
+        let folder;
+        try {
+          folder = DriveApp.getFolderById(folderConfig.folderId);
+        } catch (e) {
+          console.error('レシートフォルダ取得失敗 (' + folderConfig.label + '): ' + e.message);
+          results.errors.push('レシートフォルダ: ' + e.message);
+          continue;
+        }
+
+        const files = folder.getFiles();
+        while (files.hasNext()) {
+          const file = files.next();
+          const fileName = file.getName();
+
+          if (isProcessedFile_(fileName)) continue;
+          if (!isSupportedMimeType_(file.getMimeType())) continue;
+          if (isDuplicateInSheet_(fileName)) continue;
+
+          try {
+            processOneReceipt_(file, folderConfig);
+            results.receipts++;
+          } catch (e) {
+            console.error('レシート処理エラー (' + fileName + '): ' + e.message);
+            markFileAsError_(file, e.message);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('レシート処理スキップ: ' + e.message);
+      results.errors.push('レシート: ' + e.message);
+    }
+    console.log('━━━ レシート処理 完了: ' + results.receipts + '件 ━━━');
+
+    // ─────────────────────────────
+    // 2. 通帳処理
+    // ─────────────────────────────
+    console.log('━━━ 通帳処理 開始 ━━━');
+    const passbookFolderId = getPassbookFolderId_();
+    if (passbookFolderId) {
+      try {
+        const count = processPassbookFolder(passbookFolderId, ss);
+        results.passbooks = count || 0;
+      } catch (e) {
+        console.error('通帳処理エラー: ' + e.message);
+        results.errors.push('通帳: ' + e.message);
+      }
+    } else {
+      console.log('通帳フォルダID未設定 → スキップ');
+    }
+    console.log('━━━ 通帳処理 完了: ' + results.passbooks + '件 ━━━');
+
+    // ─────────────────────────────
+    // 3. クレカ明細処理（通帳と同じロジック）
+    // ─────────────────────────────
+    console.log('━━━ クレカ明細処理 開始 ━━━');
+    const ccFolderId = getCCStatementFolderId_();
+    if (ccFolderId) {
+      try {
+        const count = processPassbookFolder(ccFolderId, ss);
+        results.ccStatements = count || 0;
+      } catch (e) {
+        console.error('クレカ明細処理エラー: ' + e.message);
+        results.errors.push('クレカ明細: ' + e.message);
+      }
+    } else {
+      console.log('クレカ明細フォルダID未設定 → スキップ');
+    }
+    console.log('━━━ クレカ明細処理 完了: ' + results.ccStatements + '件 ━━━');
+
+    // ─────────────────────────────
+    // 結果表示
+    // ─────────────────────────────
+    const total = results.receipts + results.passbooks + results.ccStatements;
+    const summary = '一括読み込み完了\n\n' +
+      '📄 レシート: ' + results.receipts + '件\n' +
+      '🏦 通帳: ' + results.passbooks + '件\n' +
+      '💳 クレカ明細: ' + results.ccStatements + '件\n' +
+      '──────────\n' +
+      '合計: ' + total + '件' +
+      (results.errors.length > 0 ? '\n\n⚠️ エラー:\n' + results.errors.join('\n') : '');
+
+    console.log(summary);
+
+    if (!batchMode) {
+      try {
+        SpreadsheetApp.getUi().alert(summary);
+      } catch (e) { /* UI非対応環境 */ }
+    }
+
+  } finally {
+    if (lock) lock.releaseLock();
+  }
 }
 
 /**
@@ -548,7 +725,7 @@ function scheduleContinuation_(handlerName) {
  * @return {GoogleAppsScript.Spreadsheet.Sheet}
  */
 function getOrCreateMainSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getTargetSpreadsheet_();
   let sheet = ss.getSheetByName(CONFIG.SHEET_NAME.MAIN);
 
   if (!sheet) {
@@ -570,7 +747,12 @@ function getOrCreateMainSheet_() {
       '勘定科目',          // 13: accountTitle
       '貸方科目',          // 14: creditAccount
       'ファイル名',        // 15: fileName
-      'Debug'            // 16: debugInfo
+      'Debug',           // 16: debugInfo
+      '検証ステータス',     // 17: verification status
+      '検証スコア',        // 18: verification score
+      '検証結果',          // 19: verification result
+      '修正案JSON'        // 20: verification JSON
+      // 通貨列・突合列は各機能が必要時に動的追加する
     ];
     sheet.appendRow(headers);
     sheet.setFrozenRows(1);
@@ -619,15 +801,21 @@ function appendReceiptToSheet_(data) {
 
   sheet.appendRow(row);
 
-  // 条件付き書式（エラー行を赤背景）
-  const lastRow = sheet.getLastRow();
-  if (data.status === 'ERROR' || data.status === 'CHECK') {
-    sheet.getRange(lastRow, 1, 1, row.length).setBackground('#FFE6E6');
-  } else if (data.status === 'COMPOUND') {
-    sheet.getRange(lastRow, 1, 1, row.length).setBackground('#FFFACD');
-  } else if (data.status === 'HAND') {
-    sheet.getRange(lastRow, 1, 1, row.length).setBackground('#FFF3E0'); // オレンジ系の薄い背景
+  // 通貨列：JPY以外の場合のみ記入（ヘッダー名ベースで列を特定）
+  const currency = data.currency || 'JPY';
+  if (currency !== 'JPY') {
+    const lastRow = sheet.getLastRow();
+    const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    let currencyCol = findHeaderIndex(headerRow, ['通貨']) + 1; // 1-indexed
+    if (currencyCol === 0) {
+      // 通貨列がなければ最終列の次に追加
+      currencyCol = sheet.getLastColumn() + 1;
+      sheet.getRange(1, currencyCol).setValue('通貨');
+      sheet.getRange(1, currencyCol).setFontWeight('bold');
+    }
+    sheet.getRange(lastRow, currencyCol).setValue(currency);
   }
+  // ステータスはA列のアイコンで識別。行全体の背景色は付けない。
 }
 
 // ============================================================
@@ -1093,6 +1281,82 @@ function updateHandReceipt(row, totalAmount, taxable10, tax10, taxable8, tax8, n
       success: false,
       message: 'エラーが発生しました: ' + error.toString()
     };
+  }
+}
+
+/**
+ * 手書き領収証を金額変更なしでそのまま承認する
+ * サイドバーの「このまま承認」ボタンから呼ばれる
+ * @param {number} row - 行番号
+ * @return {Object} 処理結果
+ */
+function approveHandReceipt(row) {
+  try {
+    console.log('[approveHandReceipt] 開始 row:', row);
+
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_NAME.MAIN);
+    if (!sheet) {
+      console.log('[approveHandReceipt] シートが見つからない');
+      return { success: false, message: 'シートが見つかりません' };
+    }
+
+    // ステータスがHANDであることを確認
+    const rawStatus = String(sheet.getRange(row, 1).getValue() || '');
+    console.log('[approveHandReceipt] rawStatus:', rawStatus);
+    const status = rawStatus.replace(/^[🟢🔴🟡🟠🖊️]+/, '');
+    console.log('[approveHandReceipt] status:', status);
+
+    if (status !== 'HAND') {
+      return {
+        success: false,
+        message: 'この行は手書き領収証ではありません（ステータス: ' + status + '）'
+      };
+    }
+
+    // 金額データ（G〜L列）は変更しない
+    // updateHandReceiptと同じ方式で直接処理する（applyApproval_経由だとスコープ問題の可能性）
+    console.log('[approveHandReceipt] 承認処理開始');
+
+    // A列をOKに変更
+    sheet.getRange(row, 1).setValue('🟢OK');
+
+    // Q列に承認ラベル
+    sheet.getRange(row, 17).setValue('✅ 手書き承認');
+
+    // 行全体の背景色をクリア
+    const lastCol = Math.max(sheet.getLastColumn(), 20);
+    sheet.getRange(row, 1, 1, lastCol).setBackground(null);
+
+    // Q列だけ緑に
+    sheet.getRange(row, 17).setBackground('#d4edda');
+
+    // ファイル名プレフィックス変更
+    try {
+      const formula = sheet.getRange(row, 2).getFormula() || '';
+      const urlMatch = formula.match(/HYPERLINK\("([^"]+)"/);
+      if (urlMatch) {
+        const idMatch = urlMatch[1].match(/\/d\/([^\/]+)/);
+        if (idMatch) {
+          const file = DriveApp.getFileById(idMatch[1]);
+          let newName = file.getName();
+          newName = newName.replace(/^\[(HAND|CHK|ERR|CMP)\]/, '[OK]');
+          newName = newName.replace(/^[🖊️🔴🟡🟠]/, '🟢');
+          if (newName !== file.getName()) {
+            file.setName(newName);
+            console.log('[approveHandReceipt] ファイル名変更: ' + newName);
+          }
+        }
+      }
+    } catch (e) {
+      console.log('[approveHandReceipt] ファイル名変更スキップ: ' + e.message);
+    }
+
+    console.log('[approveHandReceipt] 承認完了: Row ' + row);
+    return { success: true, message: '手書き領収証を承認しました' };
+
+  } catch (error) {
+    console.log('[approveHandReceipt] エラー: ' + error.toString());
+    return { success: false, message: 'エラー: ' + error.toString() };
   }
 }
 
